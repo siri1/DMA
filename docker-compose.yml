@@ -26,14 +26,15 @@ services:
     container_name: dma_app
     environment:
       NODE_ENV: development
+      PORT: 3001
       DATABASE_URL: postgresql://dma_user:dma_password_dev@postgres:5432/dma
       NEXTAUTH_SECRET: dev-secret-key-min-32-chars-long
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://localhost:3001
       SMTP_HOST: mailhog
       SMTP_PORT: 1025
       TIMEZONE: Africa/Luanda
     ports:
-      - "3000:3000"
+      - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy

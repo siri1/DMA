@@ -2,7 +2,7 @@
 
 Plataforma web integrada para a KWANDA, Lda. — Departamento de Manutenção e Ativos (DMA).
 
-**Status:** Fase 0 — Fundações (Em Construção)
+**Status:** MVP 1 — Log de Avarias (Completa) | Próximo: MVP 2 — Oficina
 
 ---
 
@@ -40,7 +40,7 @@ npm run db:seed
 npm run dev
 ```
 
-Aceda a http://localhost:3000
+Aceda a **http://localhost:3001**
 
 **Credenciais de Demonstração:**
 - Email: `admin@kwanda.ao`
@@ -195,7 +195,7 @@ npm run dev
 ```
 
 Serviços:
-- App: http://localhost:3000
+- App: http://localhost:3001
 - Postgres: localhost:5432
 - MailHog: http://localhost:8025 (SMTP testing)
 
