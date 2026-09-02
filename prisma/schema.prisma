@@ -1,0 +1,486 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  passwordHash      String
+  role              UserRole
+  active            Boolean   @default(true)
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  workOrdersAssigned   WorkOrder[]
+  interventions        Intervention[]
+  stateTransitions     StateTransition[]
+  auditLogs            AuditLog[]
+  notifications        Notification[]
+  stockMovements       StockMovement[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Asset {
+  id                String    @id @default(cuid())
+  assetCode         String    @unique @db.VarChar(50)
+  description       String
+  brand             String?
+  model             String?
+  serialNumber      String?
+  entryDate         DateTime
+  diagnosis         String?
+  location          String?
+  responsibleId     String?
+  status            AssetStatus @default(EM_OPERACAO)
+  family            String?
+  scrappedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  workOrders        WorkOrder[]
+  interventions     Intervention[]
+  stateTransitions  StateTransition[]
+  maintenancePlans  MaintenancePlan[]
+  quarantines       Quarantine[]
+
+  @@index([status])
+  @@index([family])
+  @@index([assetCode])
+}
+
+model MaintenancePlan {
+  id                String    @id @default(cuid())
+  assetId           String?
+  asset             Asset?    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  family            String?
+  type              MaintenanceType
+  periodicityDays   Int
+  nextDueAt         DateTime
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([assetId])
+  @@index([nextDueAt])
+}
+
+model WorkOrder {
+  id                String    @id @default(cuid())
+  number            String    @unique @db.VarChar(20)
+  assetId           String
+  asset             Asset     @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  origin            WorkOrderOrigin
+  priority          WorkOrderPriority
+  status            WorkOrderStatus @default(ABERTA)
+  assignedToId      String?
+  assignedTo        User?     @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  openedAt          DateTime  @default(now())
+  dueAt             DateTime?
+  closedAt          DateTime?
+  summary           String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  interventions     Intervention[]
+  stateTransitions  StateTransition[]
+  requisitions      Requisition[]
+
+  @@index([assetId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedToId])
+}
+
+model Intervention {
+  id                String    @id @default(cuid())
+  workOrderId       String
+  workOrder         WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  technicianId      String
+  technician        User      @relation(fields: [technicianId], references: [id], onDelete: Restrict)
+  startedAt         DateTime?
+  endedAt           DateTime?
+  diagnosis         String?
+  activities        String?
+  result            InterventionResult?
+  laborMinutes      Int?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([workOrderId])
+  @@index([technicianId])
+}
+
+model StateTransition {
+  id                String    @id @default(cuid())
+  entityType        String
+  entityId          String
+  fromState         String
+  toState           String
+  reason            String?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt         DateTime  @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Quarantine {
+  id                String    @id @default(cuid())
+  assetId           String
+  asset             Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  enteredAt         DateTime  @default(now())
+  technicalOpinion  String?
+  decision          QuarantineDecision?
+  decidedAt         DateTime?
+  decidedById       String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([assetId])
+  @@index([decision])
+}
+
+model Item {
+  id                String    @id @default(cuid())
+  sku               String    @unique @db.VarChar(50)
+  description       String
+  brand             String?
+  unit              String    @default("UN")
+  minStock          Int       @default(0)
+  maxStock          Int       @default(0)
+  avgCost           Decimal   @default(0) @db.Decimal(14, 2)
+  barcode           String?
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  stockBalances     StockBalance[]
+  stockMovements    StockMovement[]
+  purchaseOrderLines PurchaseOrderLine[]
+  requisitionLines  RequisitionLine[]
+
+  @@index([sku])
+  @@index([barcode])
+}
+
+model Location {
+  id                String    @id @default(cuid())
+  code              String    @unique @db.VarChar(20)
+  warehouse         String
+  aisle             String?
+  shelf             String?
+  position          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  stockBalances     StockBalance[]
+  stockMovements    StockMovement[]
+
+  @@index([code])
+  @@index([warehouse])
+}
+
+model Supplier {
+  id                String    @id @default(cuid())
+  name              String
+  nif               String?
+  contact           String?
+  phone             String?
+  email             String?
+  leadTimeDays      Int       @default(7)
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  purchaseOrders    PurchaseOrder[]
+
+  @@index([nif])
+}
+
+model PurchaseOrder {
+  id                String    @id @default(cuid())
+  supplierId        String
+  supplier          Supplier  @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  status            PurchaseOrderStatus @default(RASCUNHO)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  lines             PurchaseOrderLine[]
+
+  @@index([supplierId])
+  @@index([status])
+}
+
+model PurchaseOrderLine {
+  id                String    @id @default(cuid())
+  purchaseOrderId   String
+  purchaseOrder     PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  itemId            String
+  item              Item      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  qtyOrdered        Int
+  qtyReceived       Int       @default(0)
+  unitPrice         Decimal   @db.Decimal(14, 2)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([purchaseOrderId])
+  @@index([itemId])
+}
+
+model Receipt {
+  id                String    @id @default(cuid())
+  purchaseOrderId   String?
+  status            ReceiptStatus @default(PARCIAL)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  lines             ReceiptLine[]
+
+  @@index([purchaseOrderId])
+}
+
+model ReceiptLine {
+  id                String    @id @default(cuid())
+  receiptId         String
+  receipt           Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  itemId            String
+  qtyReceived       Int
+  createdAt         DateTime  @default(now())
+
+  @@index([receiptId])
+  @@index([itemId])
+}
+
+model Requisition {
+  id                String    @id @default(cuid())
+  workOrderId       String
+  workOrder         WorkOrder @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  status            RequisitionStatus @default(PENDENTE)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  lines             RequisitionLine[]
+
+  @@index([workOrderId])
+  @@index([status])
+}
+
+model RequisitionLine {
+  id                String    @id @default(cuid())
+  requisitionId     String
+  requisition       Requisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  itemId            String
+  item              Item      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  qtyRequested      Int
+  qtyReserved       Int       @default(0)
+  qtyDelivered      Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([requisitionId])
+  @@index([itemId])
+}
+
+model StockMovement {
+  id                String    @id @default(cuid())
+  itemId            String
+  item              Item      @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  locationId        String
+  location          Location  @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  type              StockMovementType
+  qty               Int
+  unitCost          Decimal   @default(0) @db.Decimal(14, 2)
+  refType           String?
+  refId             String?
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  createdAt         DateTime  @default(now())
+
+  @@index([itemId])
+  @@index([locationId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model StockBalance {
+  id                String    @id @default(cuid())
+  itemId            String
+  item              Item      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  locationId        String
+  location          Location  @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  qty               Int       @default(0)
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([itemId, locationId])
+  @@index([qty])
+}
+
+model InventoryCount {
+  id                String    @id @default(cuid())
+  status            String    @default("DRAFT")
+  countedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  lines             InventoryCountLine[]
+}
+
+model InventoryCountLine {
+  id                String    @id @default(cuid())
+  inventoryCountId  String
+  inventoryCount    InventoryCount @relation(fields: [inventoryCountId], references: [id], onDelete: Cascade)
+  itemId            String
+  expectedQty       Int
+  countedQty        Int
+  createdAt         DateTime  @default(now())
+
+  @@index([inventoryCountId])
+  @@index([itemId])
+}
+
+model Notification {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel           NotificationChannel
+  event             String
+  payload           Json
+  sentAt            DateTime?
+  readAt            DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+  @@index([sentAt])
+  @@index([readAt])
+}
+
+model AuditLog {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  action            String
+  module            String
+  entityType        String
+  entityId          String
+  before            Json?
+  after             Json?
+  ip                String?
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+enum UserRole {
+  ADMIN
+  OFICINA
+  ARMAZEM
+  GESTAO
+  CLIENTE_INTERNO
+  PAINEL
+}
+
+enum AssetStatus {
+  EM_OPERACAO
+  EM_MANUTENCAO
+  INDISPONIVEL
+  FORA_DE_SERVICO
+  QUARENTENA
+  ABATIDO
+}
+
+enum MaintenanceType {
+  PREVENTIVA
+  CORRECTIVA
+  INSPECCAO
+}
+
+enum WorkOrderOrigin {
+  AVARIA
+  PLANO
+  MANUAL
+}
+
+enum WorkOrderPriority {
+  CRITICA
+  ALTA
+  MEDIA
+  BAIXA
+}
+
+enum WorkOrderStatus {
+  ABERTA
+  EM_CURSO
+  EM_DIAGNOSTICO
+  EM_REPARACAO
+  AGUARDA_MATERIAL
+  EM_INSPECCAO
+  RESOLVIDA
+  PENDENTE
+  CANCELADA
+}
+
+enum InterventionResult {
+  CONCLUIDA
+  PENDENTE
+  REQUER_NOVA
+}
+
+enum QuarantineDecision {
+  REPARAR
+  REAPROVEITAR
+  TRANSFERIR
+  ABATER
+}
+
+enum PurchaseOrderStatus {
+  RASCUNHO
+  ENVIADA
+  PARCIAL
+  RECEBIDA
+  CANCELADA
+}
+
+enum ReceiptStatus {
+  PARCIAL
+  RECEBIDA
+}
+
+enum RequisitionStatus {
+  PENDENTE
+  RESERVADA
+  AGUARDA_MATERIAL
+  ENTREGUE
+  DEVOLVIDA
+  CANCELADA
+}
+
+enum StockMovementType {
+  ENTRADA
+  SAIDA
+  RESERVA
+  DEVOLUCAO
+  TRANSFERENCIA
+  AJUSTE
+  INVENTARIO
+}
+
+enum NotificationChannel {
+  APP
+  EMAIL
+}

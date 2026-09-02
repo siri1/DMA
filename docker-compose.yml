@@ -1,0 +1,79 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dma_postgres
+    environment:
+      POSTGRES_USER: dma_user
+      POSTGRES_PASSWORD: dma_password_dev
+      POSTGRES_DB: dma
+      TZ: Africa/Luanda
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dma_user -d dma"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dma_network
+
+  app:
+    build: .
+    container_name: dma_app
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://dma_user:dma_password_dev@postgres:5432/dma
+      NEXTAUTH_SECRET: dev-secret-key-min-32-chars-long
+      NEXTAUTH_URL: http://localhost:3000
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      TIMEZONE: Africa/Luanda
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - dma_network
+    command: npm run dev
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: dma_mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - dma_network
+
+  worker:
+    build: .
+    container_name: dma_worker
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://dma_user:dma_password_dev@postgres:5432/dma
+      TIMEZONE: Africa/Luanda
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - dma_network
+    command: node --loader ts-node/esm worker/cron.ts
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  dma_network:
+    driver: bridge
