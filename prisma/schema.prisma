@@ -50,8 +50,6 @@ model Asset {
   updatedAt         DateTime  @updatedAt
 
   workOrders        WorkOrder[]
-  interventions     Intervention[]
-  stateTransitions  StateTransition[]
   maintenancePlans  MaintenancePlan[]
   quarantines       Quarantine[]
 
@@ -94,7 +92,6 @@ model WorkOrder {
   updatedAt         DateTime  @updatedAt
 
   interventions     Intervention[]
-  stateTransitions  StateTransition[]
   requisitions      Requisition[]
 
   @@index([assetId])
