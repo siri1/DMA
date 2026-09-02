@@ -33,7 +33,7 @@ export async function transitionAssetStateAction(
     module: 'assets',
     entityType: 'asset',
     entityId: assetId,
-    after: JSON.stringify({ status: toState, reason }),
+    after: { status: toState, reason } as any,
   })
 
   return asset
@@ -66,7 +66,7 @@ export async function transitionWorkOrderStateAction(
     module: 'workorders',
     entityType: 'workorder',
     entityId: workOrderId,
-    after: JSON.stringify({ status: toState, reason }),
+    after: { status: toState, reason } as any,
   })
 
   return workOrder

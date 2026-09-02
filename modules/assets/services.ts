@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import type { AssetStatus, Asset } from '@prisma/client'
+import type { AssetStatus } from '@prisma/client'
 import type { CreateAssetInput, UpdateAssetInput } from './validators'
 
 export async function getAssetById(id: string) {

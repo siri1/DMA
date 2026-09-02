@@ -27,7 +27,7 @@ export async function createInterventionAction(formData: unknown) {
     module: 'interventions',
     entityType: 'intervention',
     entityId: intervention.id,
-    after: JSON.stringify(intervention),
+    after: intervention as any,
   })
 
   return intervention
@@ -51,8 +51,8 @@ export async function updateInterventionAction(id: string, formData: unknown) {
     module: 'interventions',
     entityType: 'intervention',
     entityId: id,
-    before: before ? JSON.stringify(before) : undefined,
-    after: JSON.stringify(intervention),
+    before: before ? (before as any) : undefined,
+    after: intervention as any,
   })
 
   return intervention

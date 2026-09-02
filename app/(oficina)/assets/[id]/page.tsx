@@ -19,7 +19,7 @@ export default function AssetDetailPage() {
   const [targetState, setTargetState] = useState<AssetStatus | null>(null)
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch(`/api/assets/${assetId}`)
         if (res.ok) {
@@ -36,7 +36,7 @@ export default function AssetDetailPage() {
       }
     }
 
-    fetch()
+    fetchData()
   }, [assetId])
 
   if (loading) return <div className="p-8">A carregar...</div>

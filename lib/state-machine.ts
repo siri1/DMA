@@ -1,4 +1,4 @@
-import type { UserRole, AssetStatus, WorkOrderStatus } from '@prisma/client'
+import type { UserRole } from '@prisma/client'
 import { prisma } from './prisma'
 
 export interface StateTransition {

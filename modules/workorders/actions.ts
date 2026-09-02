@@ -27,7 +27,7 @@ export async function createWorkOrderAction(formData: unknown) {
     module: 'workorders',
     entityType: 'workorder',
     entityId: workOrder.id,
-    after: JSON.stringify(workOrder),
+    after: workOrder as any,
   })
 
   return workOrder
@@ -51,8 +51,8 @@ export async function updateWorkOrderAction(id: string, formData: unknown) {
     module: 'workorders',
     entityType: 'workorder',
     entityId: id,
-    before: before ? JSON.stringify(before) : undefined,
-    after: JSON.stringify(workOrder),
+    before: before ? (before as any) : undefined,
+    after: workOrder as any,
   })
 
   return workOrder

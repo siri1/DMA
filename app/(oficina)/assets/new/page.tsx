@@ -1,4 +1,3 @@
-import { useRouter } from 'next/navigation'
 import { AssetForm } from '@/components/domain/AssetForm'
 
 export default function NewAssetPage() {

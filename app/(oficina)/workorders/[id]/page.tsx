@@ -14,7 +14,7 @@ export default function WorkOrderDetailPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       try {
         const woRes = await fetch(`/api/workorders/${workOrderId}`)
         if (woRes.ok) {
@@ -31,7 +31,7 @@ export default function WorkOrderDetailPage() {
       }
     }
 
-    fetch()
+    fetchData()
   }, [workOrderId])
 
   if (loading) return <div className="p-8">A carregar...</div>

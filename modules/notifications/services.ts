@@ -50,7 +50,7 @@ export async function sendWorkOrderCreatedEmail(
 export async function sendStateChangeEmail(
   userId: string,
   entityType: string,
-  entityId: string,
+  _entityId: string,
   newState: string
 ) {
   const user = await prisma.user.findUnique({ where: { id: userId } })

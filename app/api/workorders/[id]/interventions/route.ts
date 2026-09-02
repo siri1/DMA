@@ -4,7 +4,7 @@ import { hasPermission } from '@/lib/rbac'
 import { getInterventionsByWorkOrder } from '@/modules/interventions/services'
 
 export async function GET(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await auth()

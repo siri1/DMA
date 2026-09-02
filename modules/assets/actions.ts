@@ -29,7 +29,7 @@ export async function createAssetAction(formData: unknown) {
     module: 'assets',
     entityType: 'asset',
     entityId: asset.id,
-    after: JSON.stringify(asset),
+    after: asset as any,
   })
 
   return asset
@@ -54,8 +54,8 @@ export async function updateAssetAction(id: string, formData: unknown) {
     module: 'assets',
     entityType: 'asset',
     entityId: asset.id,
-    before: before ? JSON.stringify(before) : undefined,
-    after: JSON.stringify(asset),
+    before: before ? (before as any) : undefined,
+    after: asset as any,
   })
 
   return asset
@@ -79,7 +79,7 @@ export async function deleteAssetAction(id: string) {
     module: 'assets',
     entityType: 'asset',
     entityId: id,
-    before: before ? JSON.stringify(before) : undefined,
+    before: before ? (before as any) : undefined,
   })
 
   return asset

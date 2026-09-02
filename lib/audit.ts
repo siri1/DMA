@@ -20,8 +20,8 @@ export async function createAuditLog(input: AuditLogInput): Promise<AuditLog> {
       module: input.module,
       entityType: input.entityType,
       entityId: input.entityId,
-      before: input.before ? JSON.stringify(input.before) : null,
-      after: input.after ? JSON.stringify(input.after) : null,
+      before: (input.before as any) || null,
+      after: (input.after as any) || null,
       ip: input.ip,
     },
   })
