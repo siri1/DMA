@@ -10,6 +10,8 @@ export default auth((req) => {
     loginUrl.searchParams.set('callbackUrl', req.nextUrl.pathname)
     return Response.redirect(loginUrl)
   }
+
+  return null
 })
 
 export const config = {
