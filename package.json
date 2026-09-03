@@ -15,7 +15,7 @@
     "test:e2e": "playwright test",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:seed": "node --loader ts-node/esm prisma/seed.ts",
+    "db:seed": "node prisma/seed.js",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "backup": "bash scripts/backup.sh",
