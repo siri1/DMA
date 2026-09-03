@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
@@ -15,26 +16,19 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
-    try {
-      const res = await fetch('/api/auth/signin/credentials', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callbackUrl=/`,
-      })
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
 
-      if (res.ok || res.status === 302) {
-        // Check redirect location
-        const redirectUrl = res.headers.get('location') || '/'
-        router.push(redirectUrl)
-      } else if (res.status === 401) {
-        setError('Email ou palavra-passe incorretos')
-        setIsLoading(false)
-      } else {
-        setError(`Erro: ${res.status}`)
-        setIsLoading(false)
-      }
-    } catch (err) {
-      setError(`Erro: ${err instanceof Error ? err.message : 'Desconhecido'}`)
+    if (result?.error) {
+      setError('Email ou palavra-passe incorretos')
+      setIsLoading(false)
+    } else if (result?.ok) {
+      router.push('/')
+    } else {
+      setError('Erro ao fazer login')
       setIsLoading(false)
     }
   }
