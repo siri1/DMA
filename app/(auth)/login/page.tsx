@@ -16,17 +16,23 @@ export default function LoginPage() {
     setIsLoading(true)
     setError('')
 
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-    })
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/',
+      })
 
-    if (result?.error) {
-      setError('Email ou palavra-passe incorretos')
+      if (result?.error) {
+        setError('Email ou palavra-passe incorretos')
+        setIsLoading(false)
+      } else if (result?.ok) {
+        router.push('/')
+      }
+    } catch (err) {
+      setError(`Erro: ${err instanceof Error ? err.message : 'Desconhecido'}`)
       setIsLoading(false)
-    } else if (result?.ok) {
-      router.push('/')
     }
   }
 
