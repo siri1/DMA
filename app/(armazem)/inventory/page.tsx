@@ -4,9 +4,18 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/formatters'
 
+interface ItemRow {
+  id: string
+  sku: string
+  description: string
+  minStock: number
+  maxStock: number
+  avgCost: number | string
+}
+
 export default function InventoryPage() {
-  const [items, setItems] = useState<any[]>([])
-  const [lowStock, setLowStock] = useState<any[]>([])
+  const [items, setItems] = useState<ItemRow[]>([])
+  const [lowStock, setLowStock] = useState<ItemRow[]>([])
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -102,7 +111,7 @@ export default function InventoryPage() {
                 <td className="px-6 py-4 text-gray-600">
                   {item.minStock}/{item.maxStock}
                 </td>
-                <td className="px-6 py-4 text-gray-600">{formatCurrency(item.avgCost)}</td>
+                <td className="px-6 py-4 text-gray-600">{formatCurrency(Number(item.avgCost))}</td>
                 <td className="px-6 py-4">
                   <Link
                     href={`/armazem/inventory/${item.id}`}

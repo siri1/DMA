@@ -79,6 +79,24 @@
 
 ---
 
+### Módulo: Maintenance (Planos de Manutenção)
+
+| Operação | ADMIN | OFICINA | ARMAZEM | GESTAO | CLIENTE | PAINEL |
+|---|---|---|---|---|---|---|
+| view | ✓ | ✓ | ✗ | ✓ | ✓ | ✗ |
+| create | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ |
+| edit | ✓ | ✓ | ✗ | ✓ | ✗ | ✗ |
+| delete | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| approve | ✓ | ✗ | ✗ | ✓ | ✗ | ✗ |
+| admin | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+
+**Contexto:**
+- view: Planos previstos, vencidos e próximos (CLIENTE vê datas, sem custos)
+- create/edit: Definir tipo, periodicidade e próxima data por equipamento ou família
+- approve: Validar a geração automática de OT a partir de planos
+
+---
+
 ### Módulo: Items (Artigos do Armazém)
 
 | Operação | ADMIN | OFICINA | ARMAZEM | GESTAO | CLIENTE | PAINEL |
@@ -112,7 +130,8 @@
 **Contexto:**
 - view: Histórico de movimentos
 - create: Registar entrada, saída, ajuste
-- edit/delete: Apenas ADMIN (raro, correções)
+- edit/delete: Apenas ADMIN (raro, correcções)
+- Recepção e conferência (`/api/receipts`) e alertas de stock mínimo usam este módulo
 
 ---
 

@@ -1,8 +1,20 @@
 import { prisma } from '@/lib/prisma'
-import { RequisitionStatus, StockMovementType } from '@prisma/client'
+import {
+  RequisitionStatus,
+  StockMovementType,
+  WorkOrderStatus,
+  type UserRole,
+} from '@prisma/client'
+import { canTransition } from '@/lib/state-machine'
+import { transitionWorkOrderState } from '@/modules/states/services'
+import { sendStateChangeEmail } from '@/modules/notifications/services'
 import type { CreateRequisitionInput } from './validators'
 
-export async function createRequisition(input: CreateRequisitionInput, userId: string) {
+export async function createRequisition(
+  input: CreateRequisitionInput,
+  userId: string,
+  userRole: UserRole
+) {
   const workOrder = await prisma.workOrder.findUnique({
     where: { id: input.workOrderId },
   })
@@ -27,18 +39,25 @@ export async function createRequisition(input: CreateRequisitionInput, userId: s
   // Check stock availability
   const insufficientStock = await checkStockAvailability(requisition.id)
   if (insufficientStock) {
-    // Transition WO to AGUARDA_MATERIAL
-    await prisma.workOrder.update({
-      where: { id: input.workOrderId },
-      data: { status: 'AGUARDA_MATERIAL' },
-    })
+    // Only valid from EM_REPARACAO; otherwise the WO keeps its state (docs/ASSUMPTIONS.md 4.4)
+    if (
+      await canTransition('workorder', workOrder.status, WorkOrderStatus.AGUARDA_MATERIAL, userRole)
+    ) {
+      await transitionWorkOrderState(
+        input.workOrderId,
+        WorkOrderStatus.AGUARDA_MATERIAL,
+        userId,
+        userRole,
+        'Requisição de material sem stock suficiente'
+      )
+    }
     await prisma.requisition.update({
       where: { id: requisition.id },
       data: { status: RequisitionStatus.AGUARDA_MATERIAL },
     })
   } else {
     // Reserve stock
-    await reserveStock(requisition.id)
+    await reserveStock(requisition.id, userId)
     await prisma.requisition.update({
       where: { id: requisition.id },
       data: { status: RequisitionStatus.RESERVADA },
@@ -89,7 +108,7 @@ export async function checkStockAvailability(requisitionId: string): Promise<boo
   return false
 }
 
-export async function reserveStock(requisitionId: string) {
+export async function reserveStock(requisitionId: string, userId: string) {
   const req = await prisma.requisition.findUnique({
     where: { id: requisitionId },
     include: { lines: true, workOrder: true },
@@ -126,7 +145,11 @@ export async function reserveStock(requisitionId: string) {
   }
 }
 
-export async function deliverRequisition(requisitionId: string) {
+export async function deliverRequisition(
+  requisitionId: string,
+  userId: string,
+  userRole: UserRole
+) {
   const req = await prisma.requisition.findUnique({
     where: { id: requisitionId },
     include: { lines: true, workOrder: true },
@@ -155,7 +178,7 @@ export async function deliverRequisition(requisitionId: string) {
           type: StockMovementType.SAIDA,
           qty: qtyToRemove,
           unitCost: 0,
-          userId: req.createdById || '',
+          userId,
           refType: 'requisition',
           refId: requisitionId,
         },
@@ -176,9 +199,24 @@ export async function deliverRequisition(requisitionId: string) {
     data: { status: RequisitionStatus.ENTREGUE },
   })
 
-  // Transition WO back to EM_REPARACAO
-  await prisma.workOrder.update({
-    where: { id: req.workOrderId },
-    data: { status: 'EM_REPARACAO' },
-  })
+  if (
+    await canTransition('workorder', req.workOrder.status, WorkOrderStatus.EM_REPARACAO, userRole)
+  ) {
+    await transitionWorkOrderState(
+      req.workOrderId,
+      WorkOrderStatus.EM_REPARACAO,
+      userId,
+      userRole,
+      'Material da requisição entregue'
+    )
+
+    if (req.workOrder.assignedToId) {
+      await sendStateChangeEmail(
+        req.workOrder.assignedToId,
+        `OT ${req.workOrder.number}`,
+        req.workOrderId,
+        WorkOrderStatus.EM_REPARACAO
+      )
+    }
+  }
 }

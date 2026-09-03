@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (!hasPermission(session.user.role as any, 'inventory', 'view')) {
+  if (!hasPermission(session.user.role as any, 'stocks', 'view')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

@@ -15,7 +15,7 @@ export default function PainelTV() {
       setCurrentPage((prev) => (prev + 1) % pages.length)
     }, 10000)
     return () => clearInterval(interval)
-  }, [])
+  }, [pages.length])
 
   const page = pages[currentPage]
 

@@ -3,14 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { formatDate, formatDateTime } from '@/lib/formatters'
-import { MaintenancePlanForm } from '@/components/domain/MaintenancePlanForm'
+import { formatDate } from '@/lib/formatters'
+import {
+  MaintenancePlanForm,
+  type MaintenancePlanFormValues,
+} from '@/components/domain/MaintenancePlanForm'
+
+interface PlanDetail extends MaintenancePlanFormValues {
+  assetId: string
+  asset: { description: string; assetCode: string; family: string | null }
+}
 
 export default function MaintenancePlanDetailPage() {
   const params = useParams()
   const id = params.id as string
 
-  const [plan, setPlan] = useState<any>(null)
+  const [plan, setPlan] = useState<PlanDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
 
@@ -98,24 +106,6 @@ export default function MaintenancePlanDetailPage() {
                 </dl>
               </div>
 
-              {plan.generatedWorkOrders && plan.generatedWorkOrders.length > 0 && (
-                <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    OT Geradas ({plan.generatedWorkOrders.length})
-                  </h2>
-                  <div className="space-y-2 text-sm">
-                    {plan.generatedWorkOrders.map((wo: any) => (
-                      <div key={wo.id} className="p-3 border border-gray-200 rounded">
-                        <p className="font-medium text-gray-900">{wo.number}</p>
-                        <p className="text-gray-600">{wo.status}</p>
-                        <p className="text-xs text-gray-400">
-                          {formatDateTime(new Date(wo.createdAt))}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

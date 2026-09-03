@@ -4,8 +4,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/formatters'
 
+interface PlanRow {
+  id: string
+  type: string
+  periodicityDays: number
+  nextDueAt: string
+  asset: { description: string; assetCode: string }
+}
+
 export default function MaintenancePlansPage() {
-  const [plans, setPlans] = useState<any[]>([])
+  const [plans, setPlans] = useState<PlanRow[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {

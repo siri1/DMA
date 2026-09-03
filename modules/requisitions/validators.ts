@@ -28,4 +28,8 @@ export const updateRequisitionStatusSchema = z.object({
 })
 
 export type CreateRequisitionInput = z.infer<typeof createRequisitionSchema>
+export const deliverRequisitionSchema = z.object({
+  action: z.literal('deliver'),
+})
+
 export type UpdateRequisitionLineInput = z.infer<typeof updateRequisitionLineSchema>

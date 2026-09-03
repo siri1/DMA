@@ -29,6 +29,14 @@ export const PERMISSIONS: PermissionMatrix = {
     approve: ['ADMIN', 'GESTAO'],
     admin: ['ADMIN'],
   },
+  maintenance: {
+    view: ['ADMIN', 'OFICINA', 'GESTAO', 'CLIENTE_INTERNO'],
+    create: ['ADMIN', 'OFICINA', 'GESTAO'],
+    edit: ['ADMIN', 'OFICINA', 'GESTAO'],
+    delete: ['ADMIN'],
+    approve: ['ADMIN', 'GESTAO'],
+    admin: ['ADMIN'],
+  },
   items: {
     view: ['ADMIN', 'ARMAZEM', 'OFICINA', 'GESTAO', 'CLIENTE_INTERNO'],
     create: ['ADMIN', 'ARMAZEM'],

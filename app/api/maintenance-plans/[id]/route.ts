@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { hasPermission } from '@/lib/rbac'
 import { getMaintenancePlanById } from '@/modules/maintenance-plans/services'
 
 export async function GET(
-  _req: any,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await auth()

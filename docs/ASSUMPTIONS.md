@@ -88,6 +88,17 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 2.5 — Sem migrações versionadas até à data; relações em falta resolvidas em serviço
+**Pressuposto:** A BD de desenvolvimento foi criada com `prisma db push`; não existe a pasta `prisma/migrations`. `ReceiptLine` e `Receipt` não têm relações Prisma para `Item`/`PurchaseOrder` (apenas as colunas `itemId`/`purchaseOrderId`).
+
+**Razão:** Adicionar as relações exige alterar o schema e, pela regra "uma fonte de verdade", uma migração versionada — o que implica primeiro criar a baseline de migrações.
+
+**Decisão provisória:** `modules/receipts/services.ts` resolve os artigos das linhas por `itemId` numa única consulta (`attachItems`). Sem alteração ao schema.
+
+**Acção pendente (arquitecto/cliente):** inicializar migrações (`prisma migrate dev --name baseline`) e adicionar as relações `ReceiptLine.item` e `Receipt.purchaseOrder`.
+
+---
+
 ## 3. Equipamentos e Manutenção
 
 ### 3.1 — Asset.assetCode é obrigatório e único
@@ -126,6 +137,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 3.5 — Decisão de quarentena mapeia para os estados permitidos pela máquina
+**Pressuposto:** A máquina de estados só permite `QUARENTENA → EM_OPERACAO | ABATIDO`. Assim: `ABATER → ABATIDO` (regista `scrappedAt`); `REPARAR`, `REAPROVEITAR` e `TRANSFERIR → EM_OPERACAO`.
+
+**Razão:** Respeitar a secção 6 do CLAUDE.md sem inventar transições novas. Para `REPARAR`, a OT subsequente leva o equipamento a `EM_MANUTENCAO`.
+
+**Implementação:** `decideQuarantine` passa por `transitionAssetState` (valida perfil, regista `StateTransition` com motivo "Decisão de quarentena: X"). A entrada em quarentena exige o equipamento em `FORA_DE_SERVICO`.
+
+---
+
 ## 4. Ordens de Trabalho e Requisições
 
 ### 4.1 — WorkOrder obrigatória para cada Requisition
@@ -152,6 +172,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 **Razão:** Workflow fluido.
 
 **Notificação:** Email/APP ao técnico: "Material disponível para OT-2026-0001".
+
+---
+
+### 4.4 — Transições automáticas por requisição respeitam a máquina de estados
+**Pressuposto:** `AGUARDA_MATERIAL` só é alcançável a partir de `EM_REPARACAO`, e o regresso a `EM_REPARACAO` só a partir de `AGUARDA_MATERIAL`. Se a OT estiver noutro estado quando a requisição é criada ou entregue, a requisição muda de estado mas a OT mantém-se.
+
+**Razão:** Não contornar `transitionWorkOrderState` (perfis, motivo obrigatório, histórico). O CLAUDE.md não define o comportamento para requisições em OT fora de `EM_REPARACAO`.
+
+**Acção pendente (cliente):** confirmar se se deve impedir requisições quando a OT não está `EM_REPARACAO`.
 
 ---
 
@@ -334,3 +363,6 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 | 2026-09-02 | Autenticação stateless JWT | Aprovado |
 | 2026-09-02 | AuditLog via Trigger PostgreSQL | Aprovado |
 | 2026-09-02 | CMP global por Item | Aprovado |
+| 2026-09-03 | Relações ReceiptLine/Receipt resolvidas em serviço (sem migração) | Provisório |
+| 2026-09-03 | Quarentena: REPARAR/REAPROVEITAR/TRANSFERIR → EM_OPERACAO; ABATER → ABATIDO | Assumido |
+| 2026-09-03 | Requisições só alteram a OT quando a transição é válida | Assumido — a confirmar |

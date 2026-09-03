@@ -4,8 +4,16 @@ import { useState } from 'react'
 import { MaintenanceType } from '@prisma/client'
 import { createMaintenancePlanAction, updateMaintenancePlanAction } from '@/modules/maintenance-plans/actions'
 
+export interface MaintenancePlanFormValues {
+  id: string
+  type: MaintenanceType
+  periodicityDays: number
+  nextDueAt: string | Date
+  active: boolean
+}
+
 interface MaintenancePlanFormProps {
-  plan?: any
+  plan?: MaintenancePlanFormValues
   assetId?: string
   onSuccess?: () => void
 }

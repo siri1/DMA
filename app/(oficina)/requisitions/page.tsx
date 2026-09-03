@@ -4,8 +4,16 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/formatters'
 
+interface RequisitionRow {
+  id: string
+  status: string
+  createdAt: string
+  workOrder: { number: string; summary: string }
+  lines: { id: string }[]
+}
+
 export default function RequisitionsPage() {
-  const [requisitions, setRequisitions] = useState<any[]>([])
+  const [requisitions, setRequisitions] = useState<RequisitionRow[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('')
   const [loading, setLoading] = useState(true)
 

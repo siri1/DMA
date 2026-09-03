@@ -142,7 +142,7 @@ export async function recordStockMovement(
 export async function recalculateCMP(itemId: string) {
   const movements = await prisma.stockMovement.findMany({
     where: { itemId, type: StockMovementType.ENTRADA },
-    orderBy: { at: 'asc' },
+    orderBy: { createdAt: 'asc' },
   })
 
   if (movements.length === 0) return
@@ -152,7 +152,7 @@ export async function recalculateCMP(itemId: string) {
 
   for (const m of movements) {
     totalQty += m.qty
-    totalCost += m.qty * m.unitCost
+    totalCost += m.qty * Number(m.unitCost)
   }
 
   const cmp = totalCost / totalQty

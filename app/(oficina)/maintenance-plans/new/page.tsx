@@ -4,8 +4,14 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MaintenancePlanForm } from '@/components/domain/MaintenancePlanForm'
 
+interface AssetOption {
+  id: string
+  assetCode: string
+  description: string
+}
+
 export default function NewMaintenancePlanPage() {
-  const [assets, setAssets] = useState<any[]>([])
+  const [assets, setAssets] = useState<AssetOption[]>([])
   const [selectedAsset, setSelectedAsset] = useState('')
   const [loading, setLoading] = useState(true)
 
