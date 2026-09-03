@@ -82,3 +82,29 @@ export async function sendStateChangeEmail(
     console.error('Email send failed:', error)
   }
 }
+
+export async function sendDailySummaryEmail(
+  userEmail: string,
+  summary: { overdueWOs: number; lowStockItems: number; newAssets: number }
+) {
+  const html = `
+    <h2>Resumo Diário — ${new Date().toLocaleDateString('pt-PT')}</h2>
+    <ul>
+      <li>Ordens Atrasadas: <strong>${summary.overdueWOs}</strong></li>
+      <li>Artigos Abaixo do Mínimo: <strong>${summary.lowStockItems}</strong></li>
+      <li>Novos Equipamentos: <strong>${summary.newAssets}</strong></li>
+    </ul>
+    <p><a href="${process.env.NEXTAUTH_URL}">Aceder ao Painel</a></p>
+  `
+
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'noreply@kwanda.ao',
+      to: userEmail,
+      subject: `Resumo Diário — ${new Date().toLocaleDateString('pt-PT')}`,
+      html,
+    })
+  } catch (error) {
+    console.error('Daily summary email failed:', error)
+  }
+}

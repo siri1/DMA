@@ -1,8 +1,12 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { compare } from 'bcryptjs'
+import { compare, hash } from 'bcryptjs'
 import { prisma } from './prisma'
 import type { NextAuthConfig } from 'next-auth'
+
+export async function hashPassword(password: string) {
+  return hash(password, 10)
+}
 
 export const authConfig = {
   providers: [
