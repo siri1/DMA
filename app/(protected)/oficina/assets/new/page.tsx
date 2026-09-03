@@ -1,3 +1,5 @@
+'use client'
+
 import { AssetForm } from '@/components/domain/AssetForm'
 
 export default function NewAssetPage() {

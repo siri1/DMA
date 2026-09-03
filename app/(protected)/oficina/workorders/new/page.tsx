@@ -1,3 +1,5 @@
+'use client'
+
 import { WorkOrderForm } from '@/components/domain/WorkOrderForm'
 
 export default function NewWorkOrderPage() {

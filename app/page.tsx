@@ -8,20 +8,22 @@ export default async function RootPage() {
     redirect('/login')
   }
 
-  // Redirect based on role to protected routes
+  // Redirect based on role
+  // Note: (protected) is a route GROUP - it does NOT appear in the URL.
+  // Verified against actual `npm run build` route output.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const role = (session.user as any).role
   switch (role) {
     case 'OFICINA':
-      redirect('/protected/oficina/assets')
+      redirect('/oficina/assets')
     case 'ARMAZEM':
-      redirect('/protected/armazem/inventory')
+      redirect('/armazem/inventory')
     case 'GESTAO':
-      redirect('/protected/gestao/dashboard-exec')
+      redirect('/gestao/dashboard-exec')
     case 'PAINEL':
-      redirect('/protected/painel')
+      redirect('/painel')
     case 'ADMIN':
     default:
-      redirect('/protected/admin/users')
+      redirect('/admin/users')
   }
 }
