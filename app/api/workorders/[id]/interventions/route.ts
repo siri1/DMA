@@ -12,6 +12,7 @@ export async function GET(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'interventions', 'view')) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }

@@ -15,6 +15,7 @@ export async function createAssetAction(formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'assets', 'create')) {
     throw new Error('Forbidden')
   }
@@ -39,6 +40,7 @@ export async function updateAssetAction(id: string, formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'assets', 'edit')) {
     throw new Error('Forbidden')
   }
@@ -65,6 +67,7 @@ export async function deleteAssetAction(id: string) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'assets', 'delete')) {
     throw new Error('Forbidden')
   }

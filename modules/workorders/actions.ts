@@ -14,6 +14,7 @@ export async function createWorkOrderAction(formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'workorders', 'create')) {
     throw new Error('Forbidden')
   }
@@ -37,6 +38,7 @@ export async function updateWorkOrderAction(id: string, formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'workorders', 'edit')) {
     throw new Error('Forbidden')
   }

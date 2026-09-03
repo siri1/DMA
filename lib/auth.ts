@@ -61,6 +61,7 @@ export const authConfig = {
     },
     async session({ session, token }) {
       if (session.user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         session.user.role = (token.role as any) || 'OFICINA'
         session.user.id = (token.id as string) || ''
       }

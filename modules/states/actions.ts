@@ -14,6 +14,7 @@ export async function transitionAssetStateAction(
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'assets', 'edit')) {
     throw new Error('Forbidden')
   }
@@ -47,6 +48,7 @@ export async function transitionWorkOrderStateAction(
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'workorders', 'edit')) {
     throw new Error('Forbidden')
   }

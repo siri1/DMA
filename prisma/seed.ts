@@ -32,7 +32,7 @@ async function main() {
   const adminPassword = await hash('Admin@2026', 10)
   const userPassword = await hash('User@2026', 10)
 
-  const admin = await prisma.user.create({
+  const _admin = await prisma.user.create({
     data: {
       name: 'Administrador',
       email: 'admin@kwanda.ao',
@@ -62,7 +62,7 @@ async function main() {
     },
   })
 
-  const gestao = await prisma.user.create({
+  const _gestao = await prisma.user.create({
     data: {
       name: 'Gestor DMA',
       email: 'gestao@kwanda.ao',
@@ -72,7 +72,7 @@ async function main() {
     },
   })
 
-  const cliente = await prisma.user.create({
+  const _cliente = await prisma.user.create({
     data: {
       name: 'Cliente Interno',
       email: 'cliente@kwanda.ao',
@@ -82,7 +82,7 @@ async function main() {
     },
   })
 
-  const painel = await prisma.user.create({
+  const _painel = await prisma.user.create({
     data: {
       name: 'Painel TV',
       email: 'painel@kwanda.ao',
@@ -214,7 +214,7 @@ async function main() {
     },
   })
 
-  const workOrder2 = await prisma.workOrder.create({
+  const _workOrder2 = await prisma.workOrder.create({
     data: {
       number: `OT-${new Date().getFullYear()}-0002`,
       assetId: assets[2].id,
@@ -245,7 +245,7 @@ async function main() {
   console.log('✅ Interventions created')
 
   // Create suppliers
-  const supplier1 = await prisma.supplier.create({
+  const _supplier1 = await prisma.supplier.create({
     data: {
       name: 'MECA Ltda. - Peças Industriais',
       nif: '1234567890',
@@ -257,7 +257,7 @@ async function main() {
     },
   })
 
-  const supplier2 = await prisma.supplier.create({
+  const _supplier2 = await prisma.supplier.create({
     data: {
       name: 'BMS Importação e Comércio',
       nif: '0987654321',
@@ -300,7 +300,7 @@ async function main() {
     },
   })
 
-  const item3 = await prisma.item.create({
+  const _item3 = await prisma.item.create({
     data: {
       sku: 'FILTRO-AR-P1',
       description: 'Filtro de ar primário',

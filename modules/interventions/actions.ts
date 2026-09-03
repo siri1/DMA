@@ -14,6 +14,7 @@ export async function createInterventionAction(formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'interventions', 'create')) {
     throw new Error('Forbidden')
   }
@@ -37,6 +38,7 @@ export async function updateInterventionAction(id: string, formData: unknown) {
   const session = await auth()
   if (!session?.user) throw new Error('Unauthorized')
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!hasPermission(session.user.role as any, 'interventions', 'edit')) {
     throw new Error('Forbidden')
   }

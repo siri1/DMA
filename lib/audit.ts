@@ -20,7 +20,9 @@ export async function createAuditLog(input: AuditLogInput): Promise<AuditLog> {
       module: input.module,
       entityType: input.entityType,
       entityId: input.entityId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       before: (input.before as any) || null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       after: (input.after as any) || null,
       ip: input.ip,
     },
@@ -47,10 +49,14 @@ export async function getAuditLogs(
   if (filters?.action) where.action = filters.action
   if (filters?.startDate || filters?.endDate) {
     where.createdAt = {}
-    if (filters.startDate)
-      (where.createdAt as any).gte = filters.startDate
-    if (filters.endDate)
-      (where.createdAt as any).lte = filters.endDate
+    if (filters.startDate) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(where.createdAt as any).gte = filters.startDate
+    }
+    if (filters.endDate) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(where.createdAt as any).lte = filters.endDate
+    }
   }
 
   return prisma.auditLog.findMany({

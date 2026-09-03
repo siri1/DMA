@@ -9,6 +9,7 @@ export default async function RootPage() {
   }
 
   // Redirect based on role
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const role = (session.user as any).role
   switch (role) {
     case 'OFICINA':
