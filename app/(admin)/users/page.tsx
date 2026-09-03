@@ -29,11 +29,21 @@ export default function UsersPage() {
   const [form, setForm] = useState<FormData>({ name: '', email: '', role: 'OFICINA', password: '' })
 
   const load = async () => {
-    const res = await fetch('/api/users')
-    if (res.ok) {
-      setUsers(await res.json())
+    try {
+      const res = await fetch('/api/users')
+      if (res.ok) {
+        setUsers(await res.json())
+      } else if (res.status === 401) {
+        setError('Sessão expirada. Faça login novamente.')
+        window.location.href = '/login'
+      } else {
+        setError(`Erro ao carregar utilizadores: ${res.status}`)
+      }
+    } catch (err) {
+      setError(`Erro: ${err instanceof Error ? err.message : 'Desconhecido'}`)
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   useEffect(() => {
@@ -80,6 +90,8 @@ export default function UsersPage() {
   }
 
   if (loading) return <div className="p-8">A carregar...</div>
+
+  if (error && !users.length) return <div className="p-8 text-red-600">{error}</div>
 
   return (
     <div className="p-8">
