@@ -49,25 +49,6 @@ export async function getExecutiveDashboardMetrics(fromDate?: Date, toDate?: Dat
     return sum + sb.qty * cost
   }, 0)
 
-  // Cost per asset (group by asset, sum movements)
-  const costPerAsset = await prisma.workOrder.findMany({
-    select: { assetId: true },
-    distinct: ['assetId'],
-  })
-
-  const assetCosts: Record<string, number> = {}
-  for (const wo of costPerAsset) {
-    const total = await prisma.stockMovement.aggregate({
-      where: {
-        refType: 'workorder',
-        refId: wo.assetId,
-        type: 'SAIDA',
-      },
-      _sum: { qty: true, unitCost: true },
-    })
-    assetCosts[wo.assetId] = Number(total._sum.unitCost || 0)
-  }
-
   return {
     assetsInMaintenance,
     workOrdersOpened: opened,
@@ -76,7 +57,6 @@ export async function getExecutiveDashboardMetrics(fromDate?: Date, toDate?: Dat
     overdueMaintenancePlans,
     avgResolutionTime: Math.round(avgResolutionTime * 100) / 100,
     totalStockValue,
-    assetCosts,
     period: { from: startDate, to: endDate },
   }
 }

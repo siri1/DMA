@@ -11,7 +11,6 @@ interface ExecutiveMetrics {
   overdueMaintenancePlans: number
   avgResolutionTime: number
   totalStockValue: number
-  assetCosts: Record<string, number>
   period: { from: string; to: string }
 }
 
