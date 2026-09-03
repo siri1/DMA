@@ -112,7 +112,6 @@ export async function recordStockMovement(
       userId,
       refType,
       refId,
-      at: new Date(),
     },
   })
 

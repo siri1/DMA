@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { RequisitionStatus, StockMovementType } from '@prisma/client'
-import type { CreateRequisitionInput, UpdateRequisitionLineInput } from './validators'
+import type { CreateRequisitionInput } from './validators'
 
 export async function createRequisition(input: CreateRequisitionInput, userId: string) {
   const workOrder = await prisma.workOrder.findUnique({
@@ -13,7 +13,6 @@ export async function createRequisition(input: CreateRequisitionInput, userId: s
     data: {
       workOrderId: input.workOrderId,
       status: RequisitionStatus.PENDENTE,
-      createdById: userId,
       lines: {
         create: input.lines.map((line) => ({
           itemId: line.itemId,
@@ -55,7 +54,6 @@ export async function getRequisitionById(id: string) {
     include: {
       workOrder: { select: { number: true, summary: true, status: true } },
       lines: { include: { item: true } },
-      createdBy: { select: { name: true } },
     },
   })
 }
@@ -103,7 +101,6 @@ export async function reserveStock(requisitionId: string) {
     // Find locations with stock
     const balances = await prisma.stockBalance.findMany({
       where: { itemId: line.itemId, qty: { gt: 0 } },
-      orderBy: { createdAt: 'asc' },
       take: 100,
     })
 
@@ -117,10 +114,9 @@ export async function reserveStock(requisitionId: string) {
           type: StockMovementType.RESERVA,
           qty: qtyToReserve,
           unitCost: 0,
-          userId: req.createdById,
+          userId,
           refType: 'requisition',
           refId: requisitionId,
-          at: new Date(),
         },
       })
 
@@ -147,7 +143,6 @@ export async function deliverRequisition(requisitionId: string) {
     // Record SAIDA movement
     const balances = await prisma.stockBalance.findMany({
       where: { itemId: line.itemId, qty: { gt: 0 } },
-      orderBy: { createdAt: 'asc' },
     })
 
     let remainingQty = line.qtyRequested
@@ -160,10 +155,9 @@ export async function deliverRequisition(requisitionId: string) {
           type: StockMovementType.SAIDA,
           qty: qtyToRemove,
           unitCost: 0,
-          userId: req.createdById,
+          userId: req.createdById || '',
           refType: 'requisition',
           refId: requisitionId,
-          at: new Date(),
         },
       })
 

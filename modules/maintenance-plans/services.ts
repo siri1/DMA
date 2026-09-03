@@ -21,7 +21,6 @@ export async function getMaintenancePlanById(id: string) {
     where: { id },
     include: {
       asset: { select: { description: true, assetCode: true, family: true } },
-      generatedWorkOrders: { take: 5, orderBy: { createdAt: 'desc' } },
     },
   })
 }
@@ -69,6 +68,8 @@ export async function generateOverdueWorkOrders() {
 
   const createdWorkOrders = await Promise.all(
     overduePlans.map(async (plan) => {
+      if (!plan.assetId || !plan.asset) return null
+
       const wo = await prisma.workOrder.create({
         data: {
           number: `OT-${now.getFullYear()}-${Math.floor(Math.random() * 10000)}`,
@@ -79,7 +80,6 @@ export async function generateOverdueWorkOrders() {
           openedAt: now,
           dueAt: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
           summary: `Manutenção ${plan.type} programada — ${plan.asset.description}`,
-          maintenancePlanId: plan.id,
         },
       })
 
@@ -93,7 +93,7 @@ export async function generateOverdueWorkOrders() {
     })
   )
 
-  return createdWorkOrders
+  return createdWorkOrders.filter((wo) => wo !== null)
 }
 
 export async function getOverduePlans() {
