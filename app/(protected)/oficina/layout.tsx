@@ -7,12 +7,6 @@ export default function OficinLayout({ children }: { children: ReactNode }) {
         <h2 className="text-xl font-bold mb-8">Oficina DMA</h2>
         <nav className="space-y-4">
           <a
-            href="/oficina/dashboard"
-            className="block px-4 py-2 rounded hover:bg-gray-800"
-          >
-            Painel
-          </a>
-          <a
             href="/oficina/assets"
             className="block px-4 py-2 rounded hover:bg-gray-800"
           >
@@ -25,16 +19,22 @@ export default function OficinLayout({ children }: { children: ReactNode }) {
             Ordens de Trabalho
           </a>
           <a
-            href="/oficina/interventions"
+            href="/oficina/maintenance-plans"
             className="block px-4 py-2 rounded hover:bg-gray-800"
           >
-            Intervenções
+            Planos de Manutenção
           </a>
           <a
-            href="/oficina/search"
+            href="/oficina/requisitions"
             className="block px-4 py-2 rounded hover:bg-gray-800"
           >
-            Pesquisa Global
+            Requisições
+          </a>
+          <a
+            href="/oficina/quarantine"
+            className="block px-4 py-2 rounded hover:bg-gray-800"
+          >
+            Quarentena
           </a>
         </nav>
       </aside>

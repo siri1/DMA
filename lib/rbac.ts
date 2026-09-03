@@ -77,6 +77,22 @@ export const PERMISSIONS: PermissionMatrix = {
     approve: [],
     admin: ['ADMIN'],
   },
+  suppliers: {
+    view: ['ADMIN', 'ARMAZEM', 'GESTAO'],
+    create: ['ADMIN', 'ARMAZEM'],
+    edit: ['ADMIN', 'ARMAZEM'],
+    delete: ['ADMIN'],
+    approve: ['ADMIN', 'GESTAO'],
+    admin: ['ADMIN'],
+  },
+  purchaseOrders: {
+    view: ['ADMIN', 'ARMAZEM', 'GESTAO'],
+    create: ['ADMIN', 'ARMAZEM'],
+    edit: ['ADMIN', 'ARMAZEM'],
+    delete: ['ADMIN'],
+    approve: ['ADMIN', 'GESTAO'],
+    admin: ['ADMIN'],
+  },
 }
 
 export function hasPermission(
