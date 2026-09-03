@@ -1,13 +1,13 @@
 import type { Asset } from '@prisma/client'
 import { formatDate } from '@/lib/formatters'
 
-const statusColors: Record<string, string> = {
-  EM_OPERACAO: 'bg-green-100 text-green-800',
-  EM_MANUTENCAO: 'bg-yellow-100 text-yellow-800',
-  INDISPONIVEL: 'bg-red-100 text-red-800',
-  FORA_DE_SERVICO: 'bg-gray-100 text-gray-800',
-  QUARENTENA: 'bg-orange-100 text-orange-800',
-  ABATIDO: 'bg-slate-100 text-slate-800',
+const STATUS_META: Record<string, { emoji: string; accent: string; label: string }> = {
+  EM_OPERACAO: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800', label: 'Em Operação' },
+  EM_MANUTENCAO: { emoji: '🔧', accent: 'bg-amber-100 text-amber-800', label: 'Em Manutenção' },
+  INDISPONIVEL: { emoji: '🚫', accent: 'bg-red-100 text-red-800', label: 'Indisponível' },
+  FORA_DE_SERVICO: { emoji: '⛔', accent: 'bg-gray-100 text-gray-800', label: 'Fora de Serviço' },
+  QUARENTENA: { emoji: '⚠️', accent: 'bg-orange-100 text-orange-800', label: 'Quarentena' },
+  ABATIDO: { emoji: '🗑️', accent: 'bg-slate-200 text-slate-800', label: 'Abatido' },
 }
 
 interface AssetCardProps {
@@ -16,32 +16,27 @@ interface AssetCardProps {
 }
 
 export function AssetCard({ asset, onClick }: AssetCardProps) {
-  const statusColor = statusColors[asset.status] || 'bg-gray-100 text-gray-800'
+  const meta = STATUS_META[asset.status] || { emoji: '❔', accent: 'bg-gray-100 text-gray-800', label: asset.status }
 
   return (
     <div
       onClick={onClick}
-      className="bg-white p-4 rounded-lg shadow hover:shadow-lg cursor-pointer transition"
+      className="bg-white p-5 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md hover:-translate-y-0.5 cursor-pointer transition-all"
     >
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{asset.assetCode}</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {asset.description}
-          </p>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-gray-400 font-mono">{asset.assetCode}</p>
+          <p className="text-base font-semibold text-gray-900 truncate">{asset.description}</p>
         </div>
-        <span className={`px-2 py-1 rounded text-xs font-medium ${statusColor}`}>
-          {asset.status}
+        <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${meta.accent}`}>
+          {meta.emoji} {meta.label}
         </span>
       </div>
 
       <div className="space-y-1 text-sm text-gray-600">
-        {asset.brand && <p>Marca: {asset.brand}</p>}
-        {asset.model && <p>Modelo: {asset.model}</p>}
-        {asset.location && <p>Local: {asset.location}</p>}
-        <p className="text-xs text-gray-500">
-          Entrada: {formatDate(asset.entryDate)}
-        </p>
+        {asset.brand && <p className="flex items-center gap-1.5">🏷️ {asset.brand} {asset.model && `· ${asset.model}`}</p>}
+        {asset.location && <p className="flex items-center gap-1.5">📍 {asset.location}</p>}
+        <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">🗓️ Entrada: {formatDate(asset.entryDate)}</p>
       </div>
     </div>
   )

@@ -152,24 +152,24 @@ export default function PurchasesPage() {
     if (res.ok) await load()
   }
 
-  if (loading) return <div className="p-8">A carregar...</div>
+  if (loading) return <div className='p-8 flex items-center justify-center min-h-[60vh]'><div className='text-center text-gray-400'><div className='text-4xl mb-3 animate-pulse'>🏭</div><p className='text-sm'>A carregar...</p></div></div>
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Compras e Fornecedores</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3"><span>🧾</span> Compras e Fornecedores</h1>
 
       <div className="flex gap-4 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('orders')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'orders' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm ${tab === 'orders' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          Encomendas
+          🧾 Encomendas
         </button>
         <button
           onClick={() => setTab('suppliers')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'suppliers' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm ${tab === 'suppliers' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          Fornecedores
+          🏢 Fornecedores
         </button>
       </div>
 
@@ -181,20 +181,20 @@ export default function PurchasesPage() {
             <h2 className="text-lg font-semibold text-gray-900">Encomendas ({orders.length})</h2>
             <button
               onClick={() => setShowPOForm(!showPOForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
             >
               {showPOForm ? 'Cancelar' : '+ Nova Encomenda'}
             </button>
           </div>
 
           {showPOForm && (
-            <form onSubmit={submitPO} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4">
+            <form onSubmit={submitPO} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Fornecedor</label>
                 <select
                   value={poSupplierId}
                   onChange={(e) => setPOSupplierId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   required
                 >
                   <option value="">Seleccione...</option>
@@ -213,7 +213,7 @@ export default function PurchasesPage() {
                       next[i] = { ...next[i], itemId: e.target.value }
                       setPOLines(next)
                     }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="">Artigo...</option>
                     {items.map((it) => (
@@ -230,7 +230,7 @@ export default function PurchasesPage() {
                       next[i] = { ...next[i], qtyOrdered: parseInt(e.target.value) || 0 }
                       setPOLines(next)
                     }}
-                    className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-20 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                   <input
                     type="number"
@@ -243,7 +243,7 @@ export default function PurchasesPage() {
                       next[i] = { ...next[i], unitPrice: parseFloat(e.target.value) || 0 }
                       setPOLines(next)
                     }}
-                    className="w-28 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-28 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
               ))}
@@ -259,7 +259,7 @@ export default function PurchasesPage() {
               <button
                 type="submit"
                 disabled={savingPO}
-                className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
               >
                 {savingPO ? 'A criar...' : 'Criar Encomenda'}
               </button>
@@ -268,7 +268,7 @@ export default function PurchasesPage() {
 
           <div className="space-y-3">
             {orders.map((o) => (
-              <div key={o.id} className="p-4 bg-white rounded-lg shadow">
+              <div key={o.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-medium text-gray-900">{o.supplier.name}</p>
@@ -314,21 +314,21 @@ export default function PurchasesPage() {
             <h2 className="text-lg font-semibold text-gray-900">Fornecedores ({suppliers.length})</h2>
             <button
               onClick={() => setShowSupplierForm(!showSupplierForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
             >
               {showSupplierForm ? 'Cancelar' : '+ Novo Fornecedor'}
             </button>
           </div>
 
           {showSupplierForm && (
-            <form onSubmit={submitSupplier} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4 max-w-md">
+            <form onSubmit={submitSupplier} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4 max-w-md">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome</label>
                 <input
                   type="text"
                   value={supplierForm.name}
                   onChange={(e) => setSupplierForm({ ...supplierForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   required
                 />
               </div>
@@ -338,7 +338,7 @@ export default function PurchasesPage() {
                   type="text"
                   value={supplierForm.nif}
                   onChange={(e) => setSupplierForm({ ...supplierForm, nif: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   required
                 />
               </div>
@@ -348,7 +348,7 @@ export default function PurchasesPage() {
                   type="text"
                   value={supplierForm.contact}
                   onChange={(e) => setSupplierForm({ ...supplierForm, contact: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
               <div>
@@ -357,7 +357,7 @@ export default function PurchasesPage() {
                   type="text"
                   value={supplierForm.phone}
                   onChange={(e) => setSupplierForm({ ...supplierForm, phone: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
               <div>
@@ -366,7 +366,7 @@ export default function PurchasesPage() {
                   type="email"
                   value={supplierForm.email}
                   onChange={(e) => setSupplierForm({ ...supplierForm, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
               <div>
@@ -376,20 +376,20 @@ export default function PurchasesPage() {
                   min={1}
                   value={supplierForm.leadTimeDays}
                   onChange={(e) => setSupplierForm({ ...supplierForm, leadTimeDays: parseInt(e.target.value) || 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 />
               </div>
               <button
                 type="submit"
                 disabled={savingSupplier}
-                className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
               >
                 {savingSupplier ? 'A criar...' : 'Criar Fornecedor'}
               </button>
             </form>
           )}
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 border-b">
                 <tr>

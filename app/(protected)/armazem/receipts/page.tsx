@@ -70,16 +70,31 @@ export default function ReceiptsPage() {
     }
   }
 
-  if (loading) return <div className="p-8">A carregar...</div>
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center text-gray-400">
+          <div className="text-4xl mb-3 animate-pulse">🚚</div>
+          <p className="text-sm">A carregar recepções...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Recepção e Conferência</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <span>🚚</span> Recepção e Conferência
+      </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <form onSubmit={submit} className="bg-white rounded-lg shadow p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Nova Recepção</h2>
-          {error && <div className="p-3 bg-red-100 text-red-800 rounded text-sm">{error}</div>}
+        <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 space-y-4 h-fit">
+          <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">➕ Nova Recepção</h2>
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-red-100 text-red-800 rounded-xl text-sm">
+              <span>⚠️</span> {error}
+            </div>
+          )}
 
           {lines.map((line, i) => (
             <div key={i} className="flex gap-2">
@@ -90,7 +105,7 @@ export default function ReceiptsPage() {
                   next[i] = { ...next[i], itemId: e.target.value }
                   setLines(next)
                 }}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                 required
               >
                 <option value="">Artigo...</option>
@@ -109,7 +124,7 @@ export default function ReceiptsPage() {
                   next[i] = { ...next[i], qtyReceived: parseInt(e.target.value) || 0 }
                   setLines(next)
                 }}
-                className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-20 px-3 py-2 border border-gray-200 rounded-xl text-sm"
               />
             </div>
           ))}
@@ -117,7 +132,7 @@ export default function ReceiptsPage() {
           <button
             type="button"
             onClick={() => setLines([...lines, { itemId: '', qtyReceived: 1 }])}
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-amber-700 hover:underline font-medium"
           >
             + Adicionar linha
           </button>
@@ -125,33 +140,40 @@ export default function ReceiptsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
           >
-            {saving ? 'A registar...' : 'Registar Recepção'}
+            {saving ? '⏳ A registar...' : '✓ Registar Recepção'}
           </button>
         </form>
 
         <div className="lg:col-span-2">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Recepções ({receipts.length})
+          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            📜 Recepções <span className="text-xs font-normal text-gray-400">({receipts.length})</span>
           </h2>
           <div className="space-y-3">
             {receipts.map((r) => (
-              <div key={r.id} className="p-4 bg-white rounded-lg shadow border-l-4 border-green-500">
+              <div key={r.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-700">{r.status}</span>
-                  <span className="text-xs text-gray-500">{formatDateTime(new Date(r.createdAt))}</span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium">
+                    ✅ {r.status}
+                  </span>
+                  <span className="text-xs text-gray-400">{formatDateTime(new Date(r.createdAt))}</span>
                 </div>
-                <ul className="mt-2 text-sm text-gray-700 space-y-1">
+                <ul className="mt-3 text-sm text-gray-700 space-y-1">
                   {r.lines.map((l) => (
-                    <li key={l.id}>
-                      {l.item?.sku ?? l.itemId} — {l.item?.description ?? ''}:{' '}
+                    <li key={l.id} className="flex items-center gap-1.5">
+                      📦 {l.item?.sku ?? l.itemId} — {l.item?.description ?? ''}:{' '}
                       <strong>{l.qtyReceived}</strong> {l.item?.unit ?? ''}
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
+            {receipts.length === 0 && (
+              <div className="bg-white p-8 rounded-2xl shadow-sm ring-1 ring-gray-100 text-center">
+                <p className="text-gray-400 text-sm">✨ Sem recepções registadas</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

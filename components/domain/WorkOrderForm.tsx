@@ -36,20 +36,20 @@ export function WorkOrderForm({ assetId, onSuccess }: WorkOrderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded">
-          {error}
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-2">
+          <span>⚠️</span> {error}
         </div>
       )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Resumo *
+          📝 Resumo *
         </label>
         <textarea
           name="summary"
           required
           rows={3}
-          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+          className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="Descrição breve do problema"
         />
       </div>
@@ -57,53 +57,53 @@ export function WorkOrderForm({ assetId, onSuccess }: WorkOrderFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Origem *
+            🎯 Origem *
           </label>
           <select
             name="origin"
             required
-            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+            className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           >
-            <option value="AVARIA">Avaria</option>
-            <option value="PLANO">Plano</option>
-            <option value="MANUAL">Manual</option>
+            <option value="AVARIA">⚡ Avaria</option>
+            <option value="PLANO">🗓️ Plano</option>
+            <option value="MANUAL">✋ Manual</option>
           </select>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Prioridade *
+            🚦 Prioridade *
           </label>
           <select
             name="priority"
             required
-            className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+            className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           >
-            <option value="BAIXA">Baixa</option>
-            <option value="MEDIA">Média</option>
-            <option value="ALTA">Alta</option>
-            <option value="CRITICA">Crítica</option>
+            <option value="BAIXA">🟢 Baixa</option>
+            <option value="MEDIA">🟡 Média</option>
+            <option value="ALTA">🟠 Alta</option>
+            <option value="CRITICA">🔴 Crítica</option>
           </select>
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700">
-          Prazo (opcional)
+          ⏰ Prazo (opcional)
         </label>
         <input
           type="date"
           name="dueAt"
-          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+          className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
       >
-        {loading ? 'A criar...' : 'Criar Ordem de Trabalho'}
+        {loading ? '⏳ A criar...' : '➕ Criar Ordem de Trabalho'}
       </button>
     </form>
   )

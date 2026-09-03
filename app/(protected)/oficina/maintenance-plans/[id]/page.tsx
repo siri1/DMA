@@ -14,6 +14,12 @@ interface PlanDetail extends MaintenancePlanFormValues {
   asset: { description: string; assetCode: string; family: string | null }
 }
 
+const TYPE_EMOJI: Record<string, string> = {
+  PREVENTIVA: '🛡️',
+  CORRECTIVA: '🔧',
+  INSPECCAO: '🔎',
+}
+
 export default function MaintenancePlanDetailPage() {
   const params = useParams()
   const id = params.id as string
@@ -37,34 +43,46 @@ export default function MaintenancePlanDetailPage() {
     fetchPlan()
   }, [id])
 
-  if (loading) return <div className="p-8">A carregar...</div>
-  if (!plan) return <div className="p-8">Plano não encontrado</div>
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center text-gray-400">
+          <div className="text-4xl mb-3 animate-pulse">🗓️</div>
+          <p className="text-sm">A carregar...</p>
+        </div>
+      </div>
+    )
+  }
+  if (!plan) return <div className="p-8">❌ Plano não encontrado</div>
 
   const isOverdue = new Date(plan.nextDueAt) < new Date()
+  const typeEmoji = TYPE_EMOJI[plan.type] || '📌'
 
   return (
     <div className="p-8">
-      <Link href="/oficina/maintenance-plans" className="text-blue-600 hover:underline mb-4 inline-block">
+      <Link href="/oficina/maintenance-plans" className="text-blue-600 hover:underline mb-4 inline-block text-sm">
         ← Voltar
       </Link>
 
       <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{plan.asset.description}</h1>
-          <p className="text-gray-600 mt-2">{plan.type}</p>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <span>{typeEmoji}</span> {plan.asset.description}
+          </h1>
+          <p className="text-gray-500 mt-1">{plan.type}</p>
         </div>
         <button
           onClick={() => setEditing(!editing)}
-          className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700"
+          className="px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-colors"
         >
-          {editing ? 'Cancelar' : 'Editar'}
+          {editing ? '✕ Cancelar' : '✏️ Editar'}
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {editing ? (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
               <MaintenancePlanForm
                 plan={plan}
                 onSuccess={() => {
@@ -74,61 +92,56 @@ export default function MaintenancePlanDetailPage() {
               />
             </div>
           ) : (
-            <div className="space-y-6">
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Detalhes</h2>
-                <dl className="space-y-3 text-sm">
-                  <div>
-                    <dt className="font-medium text-gray-700">Tipo</dt>
-                    <dd className="text-gray-600">{plan.type}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-gray-700">Periodicidade</dt>
-                    <dd className="text-gray-600">{plan.periodicityDays} dias</dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-gray-700">Próxima Manutenção</dt>
-                    <dd
-                      className={`font-medium ${
-                        isOverdue ? 'text-red-600' : 'text-gray-600'
-                      }`}
-                    >
-                      {formatDate(new Date(plan.nextDueAt))}
-                      {isOverdue && ' (VENCIDA)'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="font-medium text-gray-700">Status</dt>
-                    <dd className={plan.active ? 'text-green-600' : 'text-gray-400'}>
-                      {plan.active ? 'Activo' : 'Inactivo'}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
+            <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">📋 Detalhes</h2>
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                <div>
+                  <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Tipo</dt>
+                  <dd className="text-gray-800 mt-1">{typeEmoji} {plan.type}</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Periodicidade</dt>
+                  <dd className="text-gray-800 mt-1">🔁 Cada {plan.periodicityDays} dias</dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Próxima Manutenção</dt>
+                  <dd className={`font-medium mt-1 ${isOverdue ? 'text-red-600' : 'text-gray-800'}`}>
+                    {isOverdue ? '🚨' : '🗓️'} {formatDate(new Date(plan.nextDueAt))}
+                    {isOverdue && ' (VENCIDA)'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Status</dt>
+                  <dd className="mt-1">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${plan.active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'}`}>
+                      {plan.active ? '🟢 Activo' : '⚪ Inactivo'}
+                    </span>
+                  </dd>
+                </div>
+              </dl>
             </div>
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Equipamento</h2>
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 h-fit">
+          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">🚜 Equipamento</h2>
           <dl className="space-y-3 text-sm">
             <div>
-              <dt className="font-medium text-gray-700">Código</dt>
-              <dd className="text-gray-600">{plan.asset.assetCode}</dd>
+              <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Código</dt>
+              <dd className="text-gray-800 mt-0.5 font-mono">{plan.asset.assetCode}</dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-700">Família</dt>
-              <dd className="text-gray-600">{plan.asset.family || '—'}</dd>
+              <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Família</dt>
+              <dd className="text-gray-800 mt-0.5">{plan.asset.family || '—'}</dd>
             </div>
           </dl>
 
-          <div className="mt-6 pt-6 border-t">
+          <div className="mt-6 pt-6 border-t border-gray-100">
             <Link
               href={`/oficina/assets/${plan.assetId}`}
-              className="w-full inline-block text-center px-4 py-2 bg-gray-100 text-gray-900 font-medium rounded-lg hover:bg-gray-200"
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-900 font-medium rounded-xl hover:bg-gray-200 transition-colors"
             >
-              Ver Equipamento
+              🚜 Ver Equipamento
             </Link>
           </div>
         </div>

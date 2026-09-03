@@ -133,24 +133,24 @@ export default function CountsPage() {
     return it ? `${it.sku} — ${it.description}` : itemId
   }
 
-  if (loading) return <div className="p-8">A carregar...</div>
+  if (loading) return <div className='p-8 flex items-center justify-center min-h-[60vh]'><div className='text-center text-gray-400'><div className='text-4xl mb-3 animate-pulse'>🏭</div><p className='text-sm'>A carregar...</p></div></div>
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Inventário e Localizações</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3"><span>📍</span> Inventário e Localizações</h1>
 
       <div className="flex gap-4 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('counts')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'counts' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm ${tab === 'counts' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          Contagens
+          🔢 Contagens
         </button>
         <button
           onClick={() => setTab('locations')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'locations' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm ${tab === 'locations' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          Localizações
+          📍 Localizações
         </button>
       </div>
 
@@ -162,14 +162,14 @@ export default function CountsPage() {
             <h2 className="text-lg font-semibold text-gray-900">Contagens de Inventário ({counts.length})</h2>
             <button
               onClick={() => setShowCountForm(!showCountForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
             >
               {showCountForm ? 'Cancelar' : '+ Nova Contagem'}
             </button>
           </div>
 
           {showCountForm && (
-            <form onSubmit={submitCount} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4">
+            <form onSubmit={submitCount} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4">
               <p className="text-sm text-gray-600">
                 Introduza a quantidade esperada (sistema) e a quantidade contada (física). Divergências geram um
                 ajuste de stock automático ao concluir a contagem.
@@ -184,7 +184,7 @@ export default function CountsPage() {
                       next[i] = { ...next[i], itemId: e.target.value }
                       setCountLines(next)
                     }}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="">Artigo...</option>
                     {items.map((it) => (
@@ -201,7 +201,7 @@ export default function CountsPage() {
                       next[i] = { ...next[i], expectedQty: parseInt(e.target.value) || 0 }
                       setCountLines(next)
                     }}
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-24 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                   <input
                     type="number"
@@ -213,7 +213,7 @@ export default function CountsPage() {
                       next[i] = { ...next[i], countedQty: parseInt(e.target.value) || 0 }
                       setCountLines(next)
                     }}
-                    className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-24 px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
               ))}
@@ -229,7 +229,7 @@ export default function CountsPage() {
               <button
                 type="submit"
                 disabled={savingCount}
-                className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
               >
                 {savingCount ? 'A registar...' : 'Registar Contagem'}
               </button>
@@ -238,11 +238,11 @@ export default function CountsPage() {
 
           <div className="space-y-3">
             {counts.map((c) => (
-              <div key={c.id} className="p-4 bg-white rounded-lg shadow">
+              <div key={c.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                 <div className="flex justify-between items-center">
                   <span
                     className={`text-xs px-2 py-1 rounded font-medium ${
-                      c.status === 'CONCLUIDA' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+                      c.status === 'CONCLUIDA' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 rounded-full'
                     }`}
                   >
                     {c.status === 'CONCLUIDA' ? 'Concluída' : 'Rascunho'}
@@ -288,21 +288,21 @@ export default function CountsPage() {
             <h2 className="text-lg font-semibold text-gray-900">Localizações ({locations.length})</h2>
             <button
               onClick={() => setShowLocationForm(!showLocationForm)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
             >
               {showLocationForm ? 'Cancelar' : '+ Nova Localização'}
             </button>
           </div>
 
           {showLocationForm && (
-            <form onSubmit={submitLocation} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4 max-w-md">
+            <form onSubmit={submitLocation} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4 max-w-md">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Código (ex. A1-C02-P03-05)</label>
                 <input
                   type="text"
                   value={locationForm.code}
                   onChange={(e) => setLocationForm({ ...locationForm, code: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   required
                 />
               </div>
@@ -312,7 +312,7 @@ export default function CountsPage() {
                   type="text"
                   value={locationForm.warehouse}
                   onChange={(e) => setLocationForm({ ...locationForm, warehouse: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   required
                 />
               </div>
@@ -323,7 +323,7 @@ export default function CountsPage() {
                     type="text"
                     value={locationForm.aisle}
                     onChange={(e) => setLocationForm({ ...locationForm, aisle: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
                 <div>
@@ -332,7 +332,7 @@ export default function CountsPage() {
                     type="text"
                     value={locationForm.shelf}
                     onChange={(e) => setLocationForm({ ...locationForm, shelf: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
                 <div>
@@ -341,21 +341,21 @@ export default function CountsPage() {
                     type="text"
                     value={locationForm.position}
                     onChange={(e) => setLocationForm({ ...locationForm, position: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   />
                 </div>
               </div>
               <button
                 type="submit"
                 disabled={savingLocation}
-                className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
               >
                 {savingLocation ? 'A criar...' : 'Criar Localização'}
               </button>
             </form>
           )}
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 border-b">
                 <tr>

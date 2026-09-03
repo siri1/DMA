@@ -53,41 +53,45 @@ export function MaintenancePlanForm({ plan, assetId, onSuccess }: MaintenancePla
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-100 text-red-800 rounded-xl flex items-center gap-2">
+          <span>⚠️</span> {error}
+        </div>
+      )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Tipo de Manutenção</label>
+        <label className="block text-sm font-medium text-gray-700">🛡️ Tipo de Manutenção</label>
         <select
           name="type"
           defaultValue={plan?.type || MaintenanceType.PREVENTIVA}
-          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+          className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           required
         >
-          <option value={MaintenanceType.PREVENTIVA}>Preventiva</option>
-          <option value={MaintenanceType.CORRECTIVA}>Correctiva</option>
-          <option value={MaintenanceType.INSPECCAO}>Inspecção</option>
+          <option value={MaintenanceType.PREVENTIVA}>🛡️ Preventiva</option>
+          <option value={MaintenanceType.CORRECTIVA}>🔧 Correctiva</option>
+          <option value={MaintenanceType.INSPECCAO}>🔎 Inspecção</option>
         </select>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Periodicidade (dias)</label>
+        <label className="block text-sm font-medium text-gray-700">🔁 Periodicidade (dias)</label>
         <input
           type="number"
           name="periodicityDays"
           min="1"
           defaultValue={plan?.periodicityDays || 30}
-          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+          className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Próxima Data</label>
+        <label className="block text-sm font-medium text-gray-700">🗓️ Próxima Data</label>
         <input
           type="date"
           name="nextDueAt"
           defaultValue={plan?.nextDueAt ? new Date(plan.nextDueAt).toISOString().split('T')[0] : ''}
-          className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg"
+          className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           required
         />
       </div>
@@ -98,18 +102,18 @@ export function MaintenancePlanForm({ plan, assetId, onSuccess }: MaintenancePla
             type="checkbox"
             name="active"
             defaultChecked={plan?.active !== false}
-            className="w-4 h-4"
+            className="w-4 h-4 rounded"
           />
-          <span className="ml-2 text-sm text-gray-700">Activo</span>
+          <span className="ml-2 text-sm text-gray-700">✅ Activo</span>
         </label>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+        className="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
       >
-        {loading ? 'A guardar...' : plan ? 'Actualizar' : 'Criar Plano'}
+        {loading ? '⏳ A guardar...' : plan ? '✓ Actualizar' : '➕ Criar Plano'}
       </button>
     </form>
   )

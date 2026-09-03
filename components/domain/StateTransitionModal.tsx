@@ -12,6 +12,15 @@ interface StateTransitionModalProps {
   onClose?: () => void
 }
 
+const STATUS_EMOJI: Record<string, string> = {
+  EM_OPERACAO: '✅',
+  EM_MANUTENCAO: '🔧',
+  INDISPONIVEL: '🚫',
+  FORA_DE_SERVICO: '⛔',
+  QUARENTENA: '⚠️',
+  ABATIDO: '🗑️',
+}
+
 export function StateTransitionModal({
   assetId,
   currentState,
@@ -48,32 +57,31 @@ export function StateTransitionModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Mudar Estado de Equipamento
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          🔀 Mudar Estado de Equipamento
         </h2>
 
-        <div className="mb-4 space-y-2">
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Estado actual:</span> {currentState}
-          </p>
-          <p className="text-sm text-gray-600">
-            <span className="font-medium">Novo estado:</span> {targetState}
-          </p>
+        <div className="mb-5 flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl">
+          <span className="text-sm text-gray-600 flex items-center gap-1.5">
+            {STATUS_EMOJI[currentState] || '❔'} {currentState}
+          </span>
+          <span className="text-gray-300">→</span>
+          <span className="text-sm font-semibold text-blue-700 flex items-center gap-1.5">
+            {STATUS_EMOJI[targetState] || '❔'} {targetState}
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {requiresReason && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Motivo *
-              </label>
+              <label className="block text-sm font-medium text-gray-700">📝 Motivo *</label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows={3}
-                className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Explique o motivo desta mudança de estado"
                 required={requiresReason}
               />
@@ -81,8 +89,8 @@ export function StateTransitionModal({
           )}
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-              {error}
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
+              <span>⚠️</span> {error}
             </div>
           )}
 
@@ -90,16 +98,16 @@ export function StateTransitionModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+              className="flex-1 py-2.5 px-4 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2 px-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
             >
-              {loading ? 'A processar...' : 'Confirmar'}
+              {loading ? '⏳ A processar...' : '✓ Confirmar'}
             </button>
           </div>
         </form>
