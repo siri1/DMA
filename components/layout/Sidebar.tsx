@@ -3,16 +3,17 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { LogOut, type LucideIcon } from 'lucide-react'
 
 export interface NavItem {
   href: string
   label: string
-  emoji: string
+  icon: LucideIcon
 }
 
 interface SidebarProps {
   title: string
-  emoji: string
+  icon: LucideIcon
   items: NavItem[]
   accent?: string
 }
@@ -26,7 +27,7 @@ const ROLE_LABELS: Record<string, string> = {
   PAINEL: 'Painel',
 }
 
-export function Sidebar({ title, emoji, items, accent = 'from-indigo-600 to-indigo-800' }: SidebarProps) {
+export function Sidebar({ title, icon: HeaderIcon, items, accent = 'from-indigo-600 to-indigo-800' }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -37,7 +38,9 @@ export function Sidebar({ title, emoji, items, accent = 'from-indigo-600 to-indi
     <aside className="w-64 flex flex-col bg-gray-950 text-white overflow-y-auto shrink-0">
       <div className={`bg-gradient-to-br ${accent} p-6`}>
         <div className="flex items-center gap-3">
-          <span className="text-3xl leading-none">{emoji}</span>
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+            <HeaderIcon size={22} strokeWidth={2} />
+          </div>
           <div>
             <h2 className="text-lg font-bold leading-tight">{title}</h2>
             <p className="text-xs text-white/70">DMA Vision</p>
@@ -48,6 +51,7 @@ export function Sidebar({ title, emoji, items, accent = 'from-indigo-600 to-indi
       <nav className="flex-1 p-4 space-y-1">
         {items.map((item) => {
           const active = pathname === item.href || pathname?.startsWith(item.href + '/')
+          const Icon = item.icon
           return (
             <Link
               key={item.href}
@@ -58,7 +62,7 @@ export function Sidebar({ title, emoji, items, accent = 'from-indigo-600 to-indi
                   : 'text-gray-300 hover:bg-white/5 hover:text-white'
               }`}
             >
-              <span className="text-base leading-none">{item.emoji}</span>
+              <Icon size={18} strokeWidth={2} className="shrink-0" />
               <span>{item.label}</span>
             </Link>
           )
@@ -76,7 +80,7 @@ export function Sidebar({ title, emoji, items, accent = 'from-indigo-600 to-indi
           onClick={() => signOut({ callbackUrl: '/login' })}
           className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
         >
-          <span>🚪</span>
+          <LogOut size={16} strokeWidth={2} />
           <span>Terminar Sessão</span>
         </button>
       </div>
