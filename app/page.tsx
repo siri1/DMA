@@ -15,13 +15,13 @@ export default async function RootPage() {
     case 'OFICINA':
       redirect('/oficina/assets')
     case 'ARMAZEM':
-      redirect('/armazem/dashboard')
+      redirect('/armazem/inventory')
     case 'GESTAO':
-      redirect('/gestao/dashboard')
+      redirect('/gestao/dashboard-exec')
     case 'PAINEL':
       redirect('/painel')
     case 'ADMIN':
     default:
-      redirect('/admin/dashboard')
+      redirect('/admin/users')
   }
 }
