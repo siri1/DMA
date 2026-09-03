@@ -9,6 +9,7 @@ export async function hashPassword(password: string) {
 }
 
 export const authConfig = {
+  trustHost: true,
   providers: [
     Credentials({
       async authorize(credentials) {
