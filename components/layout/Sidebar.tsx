@@ -77,7 +77,14 @@ export function Sidebar({ title, icon: HeaderIcon, items, accent = 'from-indigo-
           </div>
         )}
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={async () => {
+            // Explicit two-step signout: wait for the session cookie to be
+            // cleared server-side, then force a hard navigation (not a
+            // client-side router transition) so no stale RSC/session state
+            // can be served from cache.
+            await signOut({ redirect: false })
+            window.location.href = '/login'
+          }}
           className="w-full flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
         >
           <LogOut size={16} strokeWidth={2} />
