@@ -289,6 +289,22 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 8.3 — Migração real "Kwanda_Log de avarias na oficina.xlsx" (04/09/2026)
+**Pressuposto:** A coluna "Status" do Excel (Resolvido/Em curso/Cancelado/Pendente) regista o estado da **reparação** (WorkOrder), não o estado operacional do **equipamento** (Asset) — o ficheiro não tem coluna própria para este último.
+
+**Decisões tomadas:**
+- **`WorkOrder.status`** — mapeado 1:1 da coluna Status: Resolvido→RESOLVIDA, Em curso→EM_CURSO, Cancelado→CANCELADA, Pendente→PENDENTE.
+- **`WorkOrder.priority`** — sem dados de origem; todas as OT históricas migradas recebem `MEDIA` por defeito.
+- **`Asset.status`** — derivado da entrada **mais recente** desse equipamento no log: `EM_MANUTENCAO` se a última reparação está "Em curso" ou "Pendente"; `EM_OPERACAO` nos restantes casos (incluindo "Cancelado" — assume-se que a reparação cancelada não impede o equipamento de voltar ao serviço).
+- **`Asset.entryDate` / `Asset.diagnosis`** — `entryDate` usa a primeira ocorrência do equipamento (mais antiga); `diagnosis` usa o texto da ocorrência mais recente.
+- **Numeração de OT histórica** — sequencial `OT-<ano>-NNNN` por ano de `openedAt` (não pelo ano corrente), para preservar ordem cronológica das 174 ordens migradas.
+
+**Resultado (execução real):** 174 linhas lidas → 87 equipamentos criados, 174 ordens de trabalho criadas, 0 rejeitadas. Reexecução confirmada idempotente (0 duplicados).
+
+**Acção pendente (cliente):** confirmar se a assunção "Cancelado → equipamento continua EM_OPERACAO" está correcta, ou se deve haver uma revisão manual desses casos específicos.
+
+---
+
 ## 9. Segurança
 
 ### 9.1 — HTTPS obrigatório em produção
@@ -366,3 +382,4 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 | 2026-09-03 | Relações ReceiptLine/Receipt resolvidas em serviço (sem migração) | Provisório |
 | 2026-09-03 | Quarentena: REPARAR/REAPROVEITAR/TRANSFERIR → EM_OPERACAO; ABATER → ABATIDO | Assumido |
 | 2026-09-03 | Requisições só alteram a OT quando a transição é válida | Assumido — a confirmar |
+| 2026-09-04 | Migração real do log de avarias: Status Excel → WorkOrder.status; Asset.status derivado da entrada mais recente; prioridade MEDIA por defeito | Executado — 87 equipamentos, 174 OT |
