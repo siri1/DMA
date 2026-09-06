@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { MaintenanceType } from '@prisma/client'
 import { createMaintenancePlanAction, updateMaintenancePlanAction } from '@/modules/maintenance-plans/actions'
+import { AlertTriangle, ShieldCheck, Repeat, Calendar, Loader2, Check, Plus } from 'lucide-react'
 
 export interface MaintenancePlanFormValues {
   id: string
@@ -55,26 +56,30 @@ export function MaintenancePlanForm({ plan, assetId, onSuccess }: MaintenancePla
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="p-3 bg-red-100 text-red-800 rounded-xl flex items-center gap-2">
-          <span>⚠️</span> {error}
+          <AlertTriangle size={16} className="shrink-0" /> {error}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">🛡️ Tipo de Manutenção</label>
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <ShieldCheck size={14} /> Tipo de Manutenção
+        </label>
         <select
           name="type"
           defaultValue={plan?.type || MaintenanceType.PREVENTIVA}
           className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-xl"
           required
         >
-          <option value={MaintenanceType.PREVENTIVA}>🛡️ Preventiva</option>
-          <option value={MaintenanceType.CORRECTIVA}>🔧 Correctiva</option>
-          <option value={MaintenanceType.INSPECCAO}>🔎 Inspecção</option>
+          <option value={MaintenanceType.PREVENTIVA}>Preventiva</option>
+          <option value={MaintenanceType.CORRECTIVA}>Correctiva</option>
+          <option value={MaintenanceType.INSPECCAO}>Inspecção</option>
         </select>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">🔁 Periodicidade (dias)</label>
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <Repeat size={14} /> Periodicidade (dias)
+        </label>
         <input
           type="number"
           name="periodicityDays"
@@ -86,7 +91,9 @@ export function MaintenancePlanForm({ plan, assetId, onSuccess }: MaintenancePla
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">🗓️ Próxima Data</label>
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <Calendar size={14} /> Próxima Data
+        </label>
         <input
           type="date"
           name="nextDueAt"
@@ -98,22 +105,29 @@ export function MaintenancePlanForm({ plan, assetId, onSuccess }: MaintenancePla
 
       <div>
         <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="active"
-            defaultChecked={plan?.active !== false}
-            className="w-4 h-4 rounded"
-          />
-          <span className="ml-2 text-sm text-gray-700">✅ Activo</span>
+          <input type="checkbox" name="active" defaultChecked={plan?.active !== false} className="w-4 h-4 rounded" />
+          <span className="ml-2 text-sm text-gray-700">Activo</span>
         </label>
       </div>
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
+        className="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20 flex items-center justify-center gap-2"
       >
-        {loading ? '⏳ A guardar...' : plan ? '✓ Actualizar' : '➕ Criar Plano'}
+        {loading ? (
+          <>
+            <Loader2 size={16} className="animate-spin" /> A guardar...
+          </>
+        ) : plan ? (
+          <>
+            <Check size={16} /> Actualizar
+          </>
+        ) : (
+          <>
+            <Plus size={16} /> Criar Plano
+          </>
+        )}
       </button>
     </form>
   )

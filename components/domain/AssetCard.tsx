@@ -1,14 +1,7 @@
 import type { Asset } from '@prisma/client'
 import { formatDate } from '@/lib/formatters'
-
-const STATUS_META: Record<string, { emoji: string; accent: string; label: string }> = {
-  EM_OPERACAO: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800', label: 'Em Operação' },
-  EM_MANUTENCAO: { emoji: '🔧', accent: 'bg-amber-100 text-amber-800', label: 'Em Manutenção' },
-  INDISPONIVEL: { emoji: '🚫', accent: 'bg-red-100 text-red-800', label: 'Indisponível' },
-  FORA_DE_SERVICO: { emoji: '⛔', accent: 'bg-gray-100 text-gray-800', label: 'Fora de Serviço' },
-  QUARENTENA: { emoji: '⚠️', accent: 'bg-orange-100 text-orange-800', label: 'Quarentena' },
-  ABATIDO: { emoji: '🗑️', accent: 'bg-slate-200 text-slate-800', label: 'Abatido' },
-}
+import { ASSET_STATUS, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { Tag, MapPin, Calendar } from 'lucide-react'
 
 interface AssetCardProps {
   asset: Asset
@@ -16,7 +9,7 @@ interface AssetCardProps {
 }
 
 export function AssetCard({ asset, onClick }: AssetCardProps) {
-  const meta = STATUS_META[asset.status] || { emoji: '❔', accent: 'bg-gray-100 text-gray-800', label: asset.status }
+  const meta = ASSET_STATUS[asset.status] || { ...FALLBACK_META, label: asset.status }
 
   return (
     <div
@@ -28,15 +21,23 @@ export function AssetCard({ asset, onClick }: AssetCardProps) {
           <p className="text-xs font-medium text-gray-400 font-mono">{asset.assetCode}</p>
           <p className="text-base font-semibold text-gray-900 truncate">{asset.description}</p>
         </div>
-        <span className={`shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${meta.accent}`}>
-          {meta.emoji} {meta.label}
-        </span>
+        <StatusBadge meta={meta} className="shrink-0" />
       </div>
 
       <div className="space-y-1 text-sm text-gray-600">
-        {asset.brand && <p className="flex items-center gap-1.5">🏷️ {asset.brand} {asset.model && `· ${asset.model}`}</p>}
-        {asset.location && <p className="flex items-center gap-1.5">📍 {asset.location}</p>}
-        <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">🗓️ Entrada: {formatDate(asset.entryDate)}</p>
+        {asset.brand && (
+          <p className="flex items-center gap-1.5">
+            <Tag size={13} className="text-gray-400" /> {asset.brand} {asset.model && `· ${asset.model}`}
+          </p>
+        )}
+        {asset.location && (
+          <p className="flex items-center gap-1.5">
+            <MapPin size={13} className="text-gray-400" /> {asset.location}
+          </p>
+        )}
+        <p className="text-xs text-gray-400 flex items-center gap-1.5 pt-1">
+          <Calendar size={12} /> Entrada: {formatDate(asset.entryDate)}
+        </p>
       </div>
     </div>
   )

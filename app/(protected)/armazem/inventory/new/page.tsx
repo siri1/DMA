@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Package, Tag, FileText, Building2, Ruler, TrendingDown, TrendingUp, Wallet, Barcode, AlertTriangle, Loader2, Plus } from 'lucide-react'
 
 interface FormData {
   sku: string
@@ -68,19 +69,21 @@ export default function NewItemPage() {
   return (
     <div className="p-8 max-w-2xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-        <span>📦</span> Novo Artigo
+        <Package size={28} /> Novo Artigo
       </h1>
       <p className="text-gray-500 mb-8">Registar um novo artigo no armazém</p>
 
       <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-            <span>⚠️</span> {error}
+            <AlertTriangle size={16} /> {error}
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">🏷️ SKU *</label>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+            <Tag size={14} /> SKU *
+          </label>
           <input
             type="text"
             value={form.sku}
@@ -92,7 +95,9 @@ export default function NewItemPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">📝 Descrição *</label>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+            <FileText size={14} /> Descrição *
+          </label>
           <textarea
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -105,7 +110,9 @@ export default function NewItemPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">🏭 Marca</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+              <Building2 size={14} /> Marca
+            </label>
             <input
               type="text"
               value={form.brand}
@@ -114,7 +121,9 @@ export default function NewItemPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">📏 Unidade</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+              <Ruler size={14} /> Unidade
+            </label>
             <input
               type="text"
               value={form.unit}
@@ -127,7 +136,9 @@ export default function NewItemPage() {
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">📉 Stock Mín.</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+              <TrendingDown size={14} /> Stock Mín.
+            </label>
             <input
               type="number"
               min={0}
@@ -137,7 +148,9 @@ export default function NewItemPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">📈 Stock Máx.</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+              <TrendingUp size={14} /> Stock Máx.
+            </label>
             <input
               type="number"
               min={1}
@@ -147,7 +160,9 @@ export default function NewItemPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">💰 Custo (Kz)</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+              <Wallet size={14} /> Custo (Kz)
+            </label>
             <input
               type="number"
               min={0}
@@ -160,7 +175,9 @@ export default function NewItemPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">🔖 Código de Barras</label>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+            <Barcode size={14} /> Código de Barras
+          </label>
           <input
             type="text"
             value={form.barcode}
@@ -172,9 +189,17 @@ export default function NewItemPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2.5 px-4 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors shadow-sm shadow-amber-700/20"
+          className="w-full py-2.5 px-4 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors shadow-sm shadow-amber-700/20 flex items-center justify-center gap-2"
         >
-          {saving ? '⏳ A criar...' : '➕ Criar Artigo'}
+          {saving ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> A criar...
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Criar Artigo
+            </>
+          )}
         </button>
       </form>
     </div>

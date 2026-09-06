@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createAssetAction, updateAssetAction } from '@/modules/assets/actions'
 import type { Asset } from '@prisma/client'
+import { AlertTriangle, Tag, FileText, Building2, Cog, Hash, Calendar, MapPin, FolderTree, Stethoscope, Loader2, Check, Plus } from 'lucide-react'
 
 interface AssetFormProps {
   asset?: Asset
@@ -39,13 +40,13 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-2">
-          <span>⚠️</span> {error}
+          <AlertTriangle size={16} className="shrink-0" /> {error}
         </div>
       )}
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          🏷️ Código do Equipamento *
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <Tag size={14} /> Código do Equipamento *
         </label>
         <input
           type="text"
@@ -57,8 +58,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          📝 Descrição *
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <FileText size={14} /> Descrição *
         </label>
         <textarea
           name="description"
@@ -71,8 +72,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            🏭 Marca
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Building2 size={14} /> Marca
           </label>
           <input
             type="text"
@@ -82,8 +83,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            🔩 Modelo
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Cog size={14} /> Modelo
           </label>
           <input
             type="text"
@@ -96,8 +97,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            🔢 Número de Série
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Hash size={14} /> Número de Série
           </label>
           <input
             type="text"
@@ -107,8 +108,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            🗓️ Data de Entrada *
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+            <Calendar size={14} /> Data de Entrada *
           </label>
           <input
             type="date"
@@ -121,8 +122,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          📍 Localização
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <MapPin size={14} /> Localização
         </label>
         <input
           type="text"
@@ -133,8 +134,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          🗂️ Família
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <FolderTree size={14} /> Família
         </label>
         <input
           type="text"
@@ -146,8 +147,8 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          🩺 Diagnóstico
+        <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+          <Stethoscope size={14} /> Diagnóstico
         </label>
         <textarea
           name="diagnosis"
@@ -160,9 +161,21 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
+        className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20 flex items-center justify-center gap-2"
       >
-        {loading ? '⏳ A processar...' : asset ? '✓ Actualizar' : '➕ Criar Equipamento'}
+        {loading ? (
+          <>
+            <Loader2 size={16} className="animate-spin" /> A processar...
+          </>
+        ) : asset ? (
+          <>
+            <Check size={16} /> Actualizar
+          </>
+        ) : (
+          <>
+            <Plus size={16} /> Criar Equipamento
+          </>
+        )}
       </button>
     </form>
   )

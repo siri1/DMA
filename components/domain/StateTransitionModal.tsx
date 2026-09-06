@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { transitionAssetStateAction } from '@/modules/states/actions'
 import type { AssetStatus } from '@prisma/client'
+import { ASSET_STATUS, FALLBACK_META } from '@/lib/status-icons'
+import { ArrowLeftRight, FileEdit, AlertTriangle, Loader2, Check, ArrowRight } from 'lucide-react'
 
 interface StateTransitionModalProps {
   assetId: string
@@ -10,15 +12,6 @@ interface StateTransitionModalProps {
   targetState: AssetStatus
   onSuccess?: () => void
   onClose?: () => void
-}
-
-const STATUS_EMOJI: Record<string, string> = {
-  EM_OPERACAO: '✅',
-  EM_MANUTENCAO: '🔧',
-  INDISPONIVEL: '🚫',
-  FORA_DE_SERVICO: '⛔',
-  QUARENTENA: '⚠️',
-  ABATIDO: '🗑️',
 }
 
 export function StateTransitionModal({
@@ -33,6 +26,10 @@ export function StateTransitionModal({
   const [error, setError] = useState('')
 
   const requiresReason = ['CANCELADA', 'PENDENTE', 'AGUARDA_MATERIAL'].includes(targetState)
+  const currentMeta = ASSET_STATUS[currentState] || { ...FALLBACK_META, label: currentState }
+  const targetMeta = ASSET_STATUS[targetState] || { ...FALLBACK_META, label: targetState }
+  const CurrentIcon = currentMeta.icon
+  const TargetIcon = targetMeta.icon
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,23 +57,25 @@ export function StateTransitionModal({
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          🔀 Mudar Estado de Equipamento
+          <ArrowLeftRight size={18} /> Mudar Estado de Equipamento
         </h2>
 
         <div className="mb-5 flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-xl">
-          <span className="text-sm text-gray-600 flex items-center gap-1.5">
-            {STATUS_EMOJI[currentState] || '❔'} {currentState}
+          <span className={`text-sm flex items-center gap-1.5 ${currentMeta.text}`}>
+            <CurrentIcon size={15} /> {currentMeta.label}
           </span>
-          <span className="text-gray-300">→</span>
-          <span className="text-sm font-semibold text-blue-700 flex items-center gap-1.5">
-            {STATUS_EMOJI[targetState] || '❔'} {targetState}
+          <ArrowRight size={16} className="text-gray-300" />
+          <span className={`text-sm font-semibold flex items-center gap-1.5 ${targetMeta.text}`}>
+            <TargetIcon size={15} /> {targetMeta.label}
           </span>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {requiresReason && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">📝 Motivo *</label>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <FileEdit size={14} /> Motivo *
+              </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
@@ -90,7 +89,7 @@ export function StateTransitionModal({
 
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-              <span>⚠️</span> {error}
+              <AlertTriangle size={16} className="shrink-0" /> {error}
             </div>
           )}
 
@@ -105,9 +104,17 @@ export function StateTransitionModal({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
+              className="flex-1 py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20 flex items-center justify-center gap-2"
             >
-              {loading ? '⏳ A processar...' : '✓ Confirmar'}
+              {loading ? (
+                <>
+                  <Loader2 size={15} className="animate-spin" /> A processar...
+                </>
+              ) : (
+                <>
+                  <Check size={15} /> Confirmar
+                </>
+              )}
             </button>
           </div>
         </form>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart3, Wrench, Clock, CheckCircle2, AlertTriangle, CalendarClock, Timer, Wallet, ClipboardList, XCircle } from 'lucide-react'
 
 interface ExecutiveMetrics {
   assetsInMaintenance: number
@@ -38,7 +39,7 @@ export default function ExecutiveDashboard() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">📊</div>
+          <BarChart3 size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar métricas...</p>
         </div>
       </div>
@@ -49,7 +50,7 @@ export default function ExecutiveDashboard() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-red-500">
-          <div className="text-4xl mb-3">❌</div>
+          <XCircle size={40} className="mx-auto mb-3" />
           <p className="text-sm">Erro ao carregar dados</p>
         </div>
       </div>
@@ -57,12 +58,12 @@ export default function ExecutiveDashboard() {
   }
 
   const kpis = [
-    { label: 'Equipamentos em Manutenção', value: metrics.assetsInMaintenance, emoji: '🚜', accent: 'text-blue-600 bg-blue-50 ring-blue-100' },
-    { label: 'OT Abertas', value: metrics.workOrdersOpened, emoji: '🟡', accent: 'text-amber-600 bg-amber-50 ring-amber-100' },
-    { label: 'OT Concluídas', value: metrics.workOrdersClosed, emoji: '✅', accent: 'text-emerald-600 bg-emerald-50 ring-emerald-100' },
-    { label: 'OT Atrasadas', value: metrics.workOrdersOverdue, emoji: '🔴', accent: 'text-red-600 bg-red-50 ring-red-100' },
-    { label: 'Manutenções Vencidas', value: metrics.overdueMaintenancePlans, emoji: '🗓️', accent: 'text-orange-600 bg-orange-50 ring-orange-100' },
-    { label: 'Tempo Médio Resolução', value: `${metrics.avgResolutionTime} dias`, emoji: '⏱️', accent: 'text-purple-600 bg-purple-50 ring-purple-100' },
+    { label: 'Equipamentos em Manutenção', value: metrics.assetsInMaintenance, icon: Wrench, accent: 'text-blue-600 bg-blue-50 ring-blue-100' },
+    { label: 'OT Abertas', value: metrics.workOrdersOpened, icon: Clock, accent: 'text-amber-600 bg-amber-50 ring-amber-100' },
+    { label: 'OT Concluídas', value: metrics.workOrdersClosed, icon: CheckCircle2, accent: 'text-emerald-600 bg-emerald-50 ring-emerald-100' },
+    { label: 'OT Atrasadas', value: metrics.workOrdersOverdue, icon: AlertTriangle, accent: 'text-red-600 bg-red-50 ring-red-100' },
+    { label: 'Manutenções Vencidas', value: metrics.overdueMaintenancePlans, icon: CalendarClock, accent: 'text-orange-600 bg-orange-50 ring-orange-100' },
+    { label: 'Tempo Médio Resolução', value: `${metrics.avgResolutionTime} dias`, icon: Timer, accent: 'text-purple-600 bg-purple-50 ring-purple-100' },
   ]
 
   const chartData = [
@@ -76,7 +77,7 @@ export default function ExecutiveDashboard() {
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span>📊</span> Dashboard Executivo
+            <BarChart3 size={28} /> Dashboard Executivo
           </h1>
           <p className="text-gray-500 text-sm mt-1">Visão consolidada de manutenção, ordens de trabalho e stock</p>
         </div>
@@ -107,10 +108,10 @@ export default function ExecutiveDashboard() {
         {kpis.map((kpi) => (
           <div
             key={kpi.label}
-            className={`bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow`}
+            className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 flex items-center gap-4 hover:shadow-md transition-shadow"
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ring-1 ${kpi.accent}`}>
-              {kpi.emoji}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ring-1 ${kpi.accent}`}>
+              <kpi.icon size={22} strokeWidth={2} />
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900 leading-tight">{kpi.value}</p>
@@ -123,7 +124,7 @@ export default function ExecutiveDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
           <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            🗂️ Ordens de Trabalho (período seleccionado)
+            <ClipboardList size={18} /> Ordens de Trabalho (período seleccionado)
           </h2>
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={chartData}>
@@ -142,7 +143,7 @@ export default function ExecutiveDashboard() {
 
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 flex flex-col justify-center">
           <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            💰 Valor de Stock
+            <Wallet size={18} /> Valor de Stock
           </h2>
           <p className="text-4xl font-bold text-emerald-600 flex items-baseline gap-2">
             {metrics.totalStockValue.toLocaleString('pt-PT')} <span className="text-lg font-medium text-emerald-500">Kz</span>

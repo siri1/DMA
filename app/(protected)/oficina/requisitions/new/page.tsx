@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { PackageSearch, Wrench, Package, AlertTriangle, Loader2, Plus } from 'lucide-react'
 
 interface WorkOrderOption {
   id: string
@@ -83,7 +84,7 @@ export default function NewRequisitionPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">📋</div>
+          <PackageSearch size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar...</p>
         </div>
       </div>
@@ -93,19 +94,21 @@ export default function NewRequisitionPage() {
   return (
     <div className="p-8 max-w-2xl">
       <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-        <span>📋</span> Nova Requisição
+        <PackageSearch size={28} /> Nova Requisição
       </h1>
       <p className="text-gray-500 mb-8">Requisitar material para uma ordem de trabalho</p>
 
       <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 space-y-4">
         {error && (
           <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm">
-            <span>⚠️</span> {error}
+            <AlertTriangle size={16} /> {error}
           </div>
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">🛠️ Ordem de Trabalho *</label>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+            <Wrench size={14} /> Ordem de Trabalho *
+          </label>
           <select
             value={workOrderId}
             onChange={(e) => setWorkOrderId(e.target.value)}
@@ -120,7 +123,9 @@ export default function NewRequisitionPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">📦 Artigos</label>
+          <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-2">
+            <Package size={14} /> Artigos
+          </label>
           <div className="space-y-2">
             {lines.map((line, i) => (
               <div key={i} className="flex gap-2">
@@ -165,9 +170,17 @@ export default function NewRequisitionPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20"
+          className="w-full py-2.5 px-4 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm shadow-blue-600/20 flex items-center justify-center gap-2"
         >
-          {saving ? '⏳ A criar...' : '➕ Criar Requisição'}
+          {saving ? (
+            <>
+              <Loader2 size={16} className="animate-spin" /> A criar...
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Criar Requisição
+            </>
+          )}
         </button>
       </form>
     </div>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { formatDateTime } from '@/lib/formatters'
+import { REQUISITION_STATUS, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { PackageSearch, Package, Info, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react'
 
 interface RequisitionLine {
   id: string
@@ -19,15 +21,6 @@ interface RequisitionDetail {
   createdAt: string
   workOrder: { number: string; summary: string; status: string }
   lines: RequisitionLine[]
-}
-
-const STATUS_META: Record<string, { emoji: string; accent: string }> = {
-  PENDENTE: { emoji: '⏸️', accent: 'bg-gray-100 text-gray-800' },
-  RESERVADA: { emoji: '🔒', accent: 'bg-blue-100 text-blue-800' },
-  AGUARDA_MATERIAL: { emoji: '📦', accent: 'bg-amber-100 text-amber-800' },
-  ENTREGUE: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800' },
-  DEVOLVIDA: { emoji: '↩️', accent: 'bg-red-100 text-red-800' },
-  CANCELADA: { emoji: '✕', accent: 'bg-gray-200 text-gray-600' },
 }
 
 export default function RequisitionDetailPage() {
@@ -82,15 +75,15 @@ export default function RequisitionDetailPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">📋</div>
+          <PackageSearch size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar...</p>
         </div>
       </div>
     )
   }
-  if (!req) return <div className="p-8">❌ Requisição não encontrada</div>
+  if (!req) return <div className="p-8">Requisição não encontrada</div>
 
-  const meta = STATUS_META[req.status] || { emoji: '❔', accent: 'bg-gray-100 text-gray-800' }
+  const meta = REQUISITION_STATUS[req.status] || { ...FALLBACK_META, label: req.status }
   const pendingDelivery = !['ENTREGUE', 'CANCELADA', 'DEVOLVIDA'].includes(req.status)
 
   return (
@@ -98,18 +91,16 @@ export default function RequisitionDetailPage() {
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span>📋</span> Requisição — {req.workOrder.number}
+            <PackageSearch size={28} /> Requisição — {req.workOrder.number}
           </h1>
           <p className="text-gray-500 mt-1">{req.workOrder.summary}</p>
         </div>
-        <span className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium ${meta.accent}`}>
-          {meta.emoji} {req.status}
-        </span>
+        <StatusBadge meta={meta} className="text-sm px-3 py-1.5" />
       </div>
 
       {error && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm mb-6">
-          <span>⚠️</span> {error}
+          <AlertTriangle size={16} /> {error}
         </div>
       )}
 
@@ -118,7 +109,7 @@ export default function RequisitionDetailPage() {
           <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100">
               <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                📦 Artigos <span className="text-xs font-normal text-gray-400">({req.lines.length})</span>
+                <Package size={18} /> Artigos <span className="text-xs font-normal text-gray-400">({req.lines.length})</span>
               </h2>
             </div>
             <table className="w-full text-sm">
@@ -143,7 +134,9 @@ export default function RequisitionDetailPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 h-fit">
-          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">ℹ️ Informação</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Info size={18} /> Informação
+          </h2>
           <dl className="space-y-3 text-sm mb-6">
             <div>
               <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Criada em</dt>
@@ -159,9 +152,17 @@ export default function RequisitionDetailPage() {
             <button
               onClick={deliver}
               disabled={delivering}
-              className="w-full py-2.5 px-4 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm shadow-emerald-600/20"
+              className="w-full py-2.5 px-4 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm shadow-emerald-600/20 flex items-center justify-center gap-2"
             >
-              {delivering ? '⏳ A entregar...' : '✅ Marcar como Entregue'}
+              {delivering ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> A entregar...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 size={16} /> Marcar como Entregue
+                </>
+              )}
             </button>
           )}
           {!pendingDelivery && (

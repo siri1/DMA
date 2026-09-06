@@ -2,13 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { formatDate } from '@/lib/formatters'
-
-const DECISIONS = [
-  { value: 'REPARAR', label: 'Reparar', emoji: '🔧', color: 'bg-blue-600 hover:bg-blue-700' },
-  { value: 'REAPROVEITAR', label: 'Reaproveitar', emoji: '♻️', color: 'bg-emerald-600 hover:bg-emerald-700' },
-  { value: 'TRANSFERIR', label: 'Transferir', emoji: '📤', color: 'bg-amber-600 hover:bg-amber-700' },
-  { value: 'ABATER', label: 'Abater', emoji: '🗑️', color: 'bg-red-600 hover:bg-red-700' },
-]
+import { QUARANTINE_DECISION } from '@/lib/status-icons'
+import { AlertTriangle, Clock, Sparkles, History, Truck, AlertOctagon } from 'lucide-react'
 
 interface QuarantineRow {
   id: string
@@ -61,7 +56,7 @@ export default function QuarantinePage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">⚠️</div>
+          <AlertTriangle size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar quarentena...</p>
         </div>
       </div>
@@ -71,16 +66,16 @@ export default function QuarantinePage() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-        <span>⚠️</span> Quarentena e Sucata
+        <AlertTriangle size={28} /> Quarentena e Sucata
       </h1>
 
       <section className="mb-10">
         <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          ⏳ Aguardam Decisão <span className="text-xs font-normal text-gray-400">({pending.length})</span>
+          <Clock size={18} /> Aguardam Decisão <span className="text-xs font-normal text-gray-400">({pending.length})</span>
         </h2>
         {pending.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl shadow-sm ring-1 ring-gray-100 text-center">
-            <div className="text-3xl mb-2">✨</div>
+            <Sparkles size={28} className="mx-auto mb-2 text-gray-300" />
             <p className="text-gray-400 text-sm">Sem equipamentos em quarentena.</p>
           </div>
         ) : (
@@ -98,28 +93,31 @@ export default function QuarantinePage() {
                   <div className="flex justify-between items-start gap-4">
                     <div>
                       <p className="font-semibold text-gray-900 flex items-center gap-2">
-                        🚜 {q.asset.assetCode} — {q.asset.description}
+                        <Truck size={15} /> {q.asset.assetCode} — {q.asset.description}
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
                         {q.technicalOpinion || '— Sem parecer técnico'}
                       </p>
                       <p className={`text-xs mt-2 flex items-center gap-1.5 ${overdue ? 'text-red-600 font-medium' : 'text-gray-500'}`}>
-                        {overdue ? '🚨' : '🕐'} Entrou {formatDate(new Date(q.enteredAt))} — {days} dia(s)
+                        {overdue ? <AlertOctagon size={13} /> : <Clock size={13} />} Entrou {formatDate(new Date(q.enteredAt))} — {days} dia(s)
                         {overdue && ' — ALERTA: sem decisão há mais de 30 dias'}
                       </p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {DECISIONS.map((d) => (
-                      <button
-                        key={d.value}
-                        disabled={deciding === q.id}
-                        onClick={() => decide(q.id, d.value)}
-                        className={`px-3.5 py-2 text-sm text-white rounded-xl font-medium ${d.color} disabled:opacity-50 transition-colors flex items-center gap-1.5`}
-                      >
-                        <span>{d.emoji}</span> {d.label}
-                      </button>
-                    ))}
+                    {Object.entries(QUARANTINE_DECISION).map(([value, meta]) => {
+                      const Icon = meta.icon
+                      return (
+                        <button
+                          key={value}
+                          disabled={deciding === q.id}
+                          onClick={() => decide(q.id, value)}
+                          className={`px-3.5 py-2 text-sm text-white rounded-xl font-medium ${meta.buttonClass} disabled:opacity-50 transition-colors flex items-center gap-1.5`}
+                        >
+                          <Icon size={14} /> {meta.label}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )
@@ -130,7 +128,7 @@ export default function QuarantinePage() {
 
       <section>
         <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          📜 Histórico de Decisões <span className="text-xs font-normal text-gray-400">({decided.length})</span>
+          <History size={18} /> Histórico de Decisões <span className="text-xs font-normal text-gray-400">({decided.length})</span>
         </h2>
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-x-auto">
           <table className="w-full text-sm">
@@ -144,15 +142,18 @@ export default function QuarantinePage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {decided.map((q) => {
-                const meta = DECISIONS.find((d) => d.value === q.decision)
+                const meta = q.decision ? QUARANTINE_DECISION[q.decision] : null
+                const Icon = meta?.icon
                 return (
                   <tr key={q.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-6 py-4 text-gray-900">
-                      🚜 {q.asset.assetCode} — {q.asset.description}
+                    <td className="px-6 py-4 text-gray-900 flex items-center gap-2">
+                      <Truck size={14} className="text-gray-400" /> {q.asset.assetCode} — {q.asset.description}
                     </td>
                     <td className="px-6 py-4 text-gray-500">{formatDate(new Date(q.enteredAt))}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {meta?.emoji} {q.decision}
+                      <span className="inline-flex items-center gap-1.5">
+                        {Icon && <Icon size={14} />} {q.decision}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-gray-500">
                       {q.decidedAt ? formatDate(new Date(q.decidedAt)) : '—'}

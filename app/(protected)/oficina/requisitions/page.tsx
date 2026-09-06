@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { formatDate } from '@/lib/formatters'
+import { REQUISITION_STATUS, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { PackageSearch, Wrench, FolderOpen } from 'lucide-react'
 
 interface RequisitionRow {
   id: string
@@ -10,15 +12,6 @@ interface RequisitionRow {
   createdAt: string
   workOrder: { number: string; summary: string }
   lines: { id: string }[]
-}
-
-const STATUS_META: Record<string, { emoji: string; accent: string }> = {
-  PENDENTE: { emoji: '⏸️', accent: 'bg-gray-100 text-gray-800' },
-  RESERVADA: { emoji: '🔒', accent: 'bg-blue-100 text-blue-800' },
-  AGUARDA_MATERIAL: { emoji: '📦', accent: 'bg-amber-100 text-amber-800' },
-  ENTREGUE: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800' },
-  DEVOLVIDA: { emoji: '↩️', accent: 'bg-red-100 text-red-800' },
-  CANCELADA: { emoji: '✕', accent: 'bg-gray-200 text-gray-600' },
 }
 
 export default function RequisitionsPage() {
@@ -41,14 +34,14 @@ export default function RequisitionsPage() {
     fetchRequisitions()
   }, [])
 
-  const statuses = Object.keys(STATUS_META)
+  const statuses = Object.keys(REQUISITION_STATUS)
   const filtered = statusFilter ? requisitions.filter((r) => r.status === statusFilter) : requisitions
 
   if (loading) {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">📋</div>
+          <PackageSearch size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar requisições...</p>
         </div>
       </div>
@@ -59,7 +52,7 @@ export default function RequisitionsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <span>📋</span> Requisições de Material
+          <PackageSearch size={28} /> Requisições de Material
         </h1>
       </div>
 
@@ -73,16 +66,17 @@ export default function RequisitionsPage() {
           Todas ({requisitions.length})
         </button>
         {statuses.map((status) => {
-          const meta = STATUS_META[status]
+          const meta = REQUISITION_STATUS[status]
+          const Icon = meta.icon
           return (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                statusFilter === status ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20' : `${meta.accent}`
+                statusFilter === status ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20' : meta.badge
               }`}
             >
-              <span>{meta.emoji}</span> {status} ({requisitions.filter((r) => r.status === status).length})
+              <Icon size={14} /> {status} ({requisitions.filter((r) => r.status === status).length})
             </button>
           )
         })}
@@ -90,13 +84,13 @@ export default function RequisitionsPage() {
 
       {filtered.length === 0 ? (
         <div className="bg-white p-12 rounded-2xl shadow-sm ring-1 ring-gray-100 text-center">
-          <div className="text-4xl mb-3">🗂️</div>
+          <FolderOpen size={40} className="mx-auto mb-3 text-gray-300" />
           <p className="text-gray-500 text-sm">Nenhuma requisição encontrada</p>
         </div>
       ) : (
         <div className="grid gap-4">
           {filtered.map((req) => {
-            const meta = STATUS_META[req.status] || { emoji: '❔', accent: 'bg-gray-100 text-gray-800' }
+            const meta = REQUISITION_STATUS[req.status] || { ...FALLBACK_META, label: req.status }
             return (
               <Link
                 key={req.id}
@@ -105,12 +99,12 @@ export default function RequisitionsPage() {
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">🛠️ OT: {req.workOrder.number}</h3>
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <Wrench size={15} /> OT: {req.workOrder.number}
+                    </h3>
                     <p className="text-sm text-gray-600 mt-0.5">{req.workOrder.summary}</p>
                     <div className="flex gap-2 mt-3 items-center">
-                      <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium ${meta.accent}`}>
-                        {meta.emoji} {req.status}
-                      </span>
+                      <StatusBadge meta={meta} />
                       <span className="text-xs text-gray-400">
                         {req.lines.length} item(ns) — Criada {formatDate(new Date(req.createdAt))}
                       </span>

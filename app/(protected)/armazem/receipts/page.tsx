@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
+import { Truck, Plus, AlertTriangle, Loader2, Check, History, Package, Sparkles, CheckCircle2 } from 'lucide-react'
 
 interface Line {
   itemId: string
@@ -74,7 +75,7 @@ export default function ReceiptsPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">🚚</div>
+          <Truck size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar recepções...</p>
         </div>
       </div>
@@ -84,15 +85,17 @@ export default function ReceiptsPage() {
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-        <span>🚚</span> Recepção e Conferência
+        <Truck size={28} /> Recepção e Conferência
       </h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 space-y-4 h-fit">
-          <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">➕ Nova Recepção</h2>
+          <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+            <Plus size={17} /> Nova Recepção
+          </h2>
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-100 text-red-800 rounded-xl text-sm">
-              <span>⚠️</span> {error}
+              <AlertTriangle size={16} /> {error}
             </div>
           )}
 
@@ -140,29 +143,37 @@ export default function ReceiptsPage() {
           <button
             type="submit"
             disabled={saving}
-            className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
+            className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
           >
-            {saving ? '⏳ A registar...' : '✓ Registar Recepção'}
+            {saving ? (
+              <>
+                <Loader2 size={16} className="animate-spin" /> A registar...
+              </>
+            ) : (
+              <>
+                <Check size={16} /> Registar Recepção
+              </>
+            )}
           </button>
         </form>
 
         <div className="lg:col-span-2">
           <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            📜 Recepções <span className="text-xs font-normal text-gray-400">({receipts.length})</span>
+            <History size={18} /> Recepções <span className="text-xs font-normal text-gray-400">({receipts.length})</span>
           </h2>
           <div className="space-y-3">
             {receipts.map((r) => (
               <div key={r.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium">
-                    ✅ {r.status}
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-medium flex items-center gap-1.5 w-fit">
+                    <CheckCircle2 size={12} /> {r.status}
                   </span>
                   <span className="text-xs text-gray-400">{formatDateTime(new Date(r.createdAt))}</span>
                 </div>
                 <ul className="mt-3 text-sm text-gray-700 space-y-1">
                   {r.lines.map((l) => (
                     <li key={l.id} className="flex items-center gap-1.5">
-                      📦 {l.item?.sku ?? l.itemId} — {l.item?.description ?? ''}:{' '}
+                      <Package size={13} className="text-gray-400" /> {l.item?.sku ?? l.itemId} — {l.item?.description ?? ''}:{' '}
                       <strong>{l.qtyReceived}</strong> {l.item?.unit ?? ''}
                     </li>
                   ))}
@@ -171,7 +182,9 @@ export default function ReceiptsPage() {
             ))}
             {receipts.length === 0 && (
               <div className="bg-white p-8 rounded-2xl shadow-sm ring-1 ring-gray-100 text-center">
-                <p className="text-gray-400 text-sm">✨ Sem recepções registadas</p>
+                <p className="text-gray-400 text-sm flex items-center justify-center gap-2">
+                  <Sparkles size={15} /> Sem recepções registadas
+                </p>
               </div>
             )}
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { MaintenancePlanForm } from '@/components/domain/MaintenancePlanForm'
+import { CalendarClock, ArrowLeft, Truck } from 'lucide-react'
 
 interface AssetOption {
   id: string
@@ -34,7 +35,7 @@ export default function NewMaintenancePlanPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">🗓️</div>
+          <CalendarClock size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar...</p>
         </div>
       </div>
@@ -43,19 +44,21 @@ export default function NewMaintenancePlanPage() {
 
   return (
     <div className="p-8 max-w-2xl">
-      <Link href="/oficina/maintenance-plans" className="text-blue-600 hover:underline mb-4 inline-block text-sm">
-        ← Voltar
+      <Link href="/oficina/maintenance-plans" className="text-blue-600 hover:underline mb-4 inline-flex items-center gap-1 text-sm">
+        <ArrowLeft size={14} /> Voltar
       </Link>
 
       <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-        <span>🗓️</span> Novo Plano de Manutenção
+        <CalendarClock size={28} /> Novo Plano de Manutenção
       </h1>
       <p className="text-gray-500 mb-8">Definir manutenção periódica para um equipamento</p>
 
       <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
         {!selectedAsset ? (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4">🚜 Seleccionar Equipamento</label>
+            <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-4">
+              <Truck size={15} /> Seleccionar Equipamento
+            </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {assets.map((asset) => (
                 <button
@@ -73,14 +76,14 @@ export default function NewMaintenancePlanPage() {
           <div>
             <button
               onClick={() => setSelectedAsset('')}
-              className="text-sm text-blue-600 hover:underline mb-4"
+              className="text-sm text-blue-600 hover:underline mb-4 inline-flex items-center gap-1"
             >
-              ← Escolher outro equipamento
+              <ArrowLeft size={13} /> Escolher outro equipamento
             </button>
 
             <div className="p-4 bg-blue-50 ring-1 ring-blue-100 rounded-xl mb-6">
               <p className="text-sm text-blue-800 flex items-center gap-1.5">
-                🚜 {assets.find((a) => a.id === selectedAsset)?.assetCode} —{' '}
+                <Truck size={14} /> {assets.find((a) => a.id === selectedAsset)?.assetCode} —{' '}
                 {assets.find((a) => a.id === selectedAsset)?.description}
               </p>
             </div>

@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
+import { USER_ROLE, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { Users, Plus, X, AlertTriangle, Loader2, Check, Ban, Circle, CheckCircle2 } from 'lucide-react'
 
 interface User {
   id: string
@@ -18,15 +20,6 @@ interface FormData {
   email: string
   role: string
   password: string
-}
-
-const ROLE_META: Record<string, { emoji: string; label: string; accent: string }> = {
-  ADMIN: { emoji: '⚙️', label: 'Administrador', accent: 'bg-slate-100 text-slate-800' },
-  OFICINA: { emoji: '🔧', label: 'Oficina', accent: 'bg-blue-100 text-blue-800' },
-  ARMAZEM: { emoji: '🏭', label: 'Armazém', accent: 'bg-amber-100 text-amber-800' },
-  GESTAO: { emoji: '📈', label: 'Gestão', accent: 'bg-emerald-100 text-emerald-800' },
-  CLIENTE_INTERNO: { emoji: '👤', label: 'Cliente Interno', accent: 'bg-purple-100 text-purple-800' },
-  PAINEL: { emoji: '📺', label: 'Painel', accent: 'bg-gray-100 text-gray-800' },
 }
 
 export default function UsersPage() {
@@ -102,7 +95,7 @@ export default function UsersPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">👥</div>
+          <Users size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar utilizadores...</p>
         </div>
       </div>
@@ -113,7 +106,7 @@ export default function UsersPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-red-500">
-          <div className="text-4xl mb-3">❌</div>
+          <AlertTriangle size={40} className="mx-auto mb-3" />
           <p className="text-sm">{error}</p>
         </div>
       </div>
@@ -127,7 +120,7 @@ export default function UsersPage() {
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span>👥</span> Controlo de Utilizadores
+            <Users size={28} /> Controlo de Utilizadores
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             {activeCount} activos de {users.length} no total
@@ -135,18 +128,28 @@ export default function UsersPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm shadow-sm shadow-indigo-600/20 transition-colors"
+          className="px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm shadow-sm shadow-indigo-600/20 transition-colors flex items-center gap-2"
         >
-          {showForm ? '✕ Cancelar' : '➕ Novo Utilizador'}
+          {showForm ? (
+            <>
+              <X size={16} /> Cancelar
+            </>
+          ) : (
+            <>
+              <Plus size={16} /> Novo Utilizador
+            </>
+          )}
         </button>
       </div>
 
       {showForm && (
         <form onSubmit={submit} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-8 max-w-md">
-          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">➕ Novo Utilizador</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <Plus size={17} /> Novo Utilizador
+          </h2>
           {error && (
             <div className="flex items-center gap-2 p-3 bg-red-50 text-red-800 rounded-xl mb-4 text-sm">
-              <span>⚠️</span> {error}
+              <AlertTriangle size={16} /> {error}
             </div>
           )}
 
@@ -180,8 +183,8 @@ export default function UsersPage() {
                 onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               >
-                {Object.entries(ROLE_META).map(([key, meta]) => (
-                  <option key={key} value={key}>{meta.emoji} {meta.label}</option>
+                {Object.entries(USER_ROLE).map(([key, meta]) => (
+                  <option key={key} value={key}>{meta.label}</option>
                 ))}
               </select>
             </div>
@@ -201,9 +204,17 @@ export default function UsersPage() {
             <button
               type="submit"
               disabled={saving}
-              className="w-full px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm disabled:opacity-50 transition-colors"
+              className="w-full px-4 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 font-medium text-sm disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
-              {saving ? '⏳ A criar...' : '✓ Criar Utilizador'}
+              {saving ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" /> A criar...
+                </>
+              ) : (
+                <>
+                  <Check size={16} /> Criar Utilizador
+                </>
+              )}
             </button>
           </div>
         </form>
@@ -223,33 +234,35 @@ export default function UsersPage() {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {users.map((user) => {
-              const meta = ROLE_META[user.role] || { emoji: '❔', label: user.role, accent: 'bg-gray-100 text-gray-800' }
+              const meta = USER_ROLE[user.role] || { ...FALLBACK_META, label: user.role }
               return (
                 <tr key={user.id} className="hover:bg-gray-50/70 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">{user.name}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                   <td className="px-6 py-4 text-sm">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${meta.accent}`}>
-                      {meta.emoji} {meta.label}
-                    </span>
+                    <StatusBadge meta={meta} />
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {user.lastLoginAt ? formatDateTime(new Date(user.lastLoginAt)) : '— Nunca'}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {user.active ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">🟢 Activo</span>
+                      <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                        <CheckCircle2 size={14} /> Activo
+                      </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-gray-400 font-medium">⚪ Inactivo</span>
+                      <span className="inline-flex items-center gap-1 text-gray-400 font-medium">
+                        <Circle size={14} /> Inactivo
+                      </span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm">
                     {user.active && (
                       <button
                         onClick={() => deactivate(user.id)}
-                        className="text-red-600 hover:text-red-800 font-medium"
+                        className="text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
                       >
-                        🚫 Desactivar
+                        <Ban size={14} /> Desactivar
                       </button>
                     )}
                   </td>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
+import { MapPin, ClipboardList, X, Plus, AlertTriangle, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react'
 
 interface LocationRow {
   id: string
@@ -133,28 +134,43 @@ export default function CountsPage() {
     return it ? `${it.sku} — ${it.description}` : itemId
   }
 
-  if (loading) return <div className='p-8 flex items-center justify-center min-h-[60vh]'><div className='text-center text-gray-400'><div className='text-4xl mb-3 animate-pulse'>🏭</div><p className='text-sm'>A carregar...</p></div></div>
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center text-gray-400">
+          <MapPin size={40} className="mx-auto mb-3 animate-pulse" />
+          <p className="text-sm">A carregar...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3"><span>📍</span> Inventário e Localizações</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <MapPin size={28} /> Inventário e Localizações
+      </h1>
 
       <div className="flex gap-4 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('counts')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'counts' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-1.5 ${tab === 'counts' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          🔢 Contagens
+          <ClipboardList size={15} /> Contagens
         </button>
         <button
           onClick={() => setTab('locations')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'locations' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-1.5 ${tab === 'locations' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          📍 Localizações
+          <MapPin size={15} /> Localizações
         </button>
       </div>
 
-      {error && <div className="p-3 bg-red-100 text-red-800 rounded text-sm mb-4">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-100 text-red-800 rounded-xl text-sm mb-4 flex items-center gap-2">
+          <AlertTriangle size={16} /> {error}
+        </div>
+      )}
 
       {tab === 'counts' && (
         <div>
@@ -162,9 +178,9 @@ export default function CountsPage() {
             <h2 className="text-lg font-semibold text-gray-900">Contagens de Inventário ({counts.length})</h2>
             <button
               onClick={() => setShowCountForm(!showCountForm)}
-              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors flex items-center gap-2"
             >
-              {showCountForm ? 'Cancelar' : '+ Nova Contagem'}
+              {showCountForm ? <><X size={15} /> Cancelar</> : <><Plus size={15} /> Nova Contagem</>}
             </button>
           </div>
 
@@ -229,9 +245,9 @@ export default function CountsPage() {
               <button
                 type="submit"
                 disabled={savingCount}
-                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
-                {savingCount ? 'A registar...' : 'Registar Contagem'}
+                {savingCount ? <><Loader2 size={16} className="animate-spin" /> A registar...</> : <><Plus size={16} /> Registar Contagem</>}
               </button>
             </form>
           )}
@@ -241,11 +257,11 @@ export default function CountsPage() {
               <div key={c.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
                 <div className="flex justify-between items-center">
                   <span
-                    className={`text-xs px-2 py-1 rounded font-medium ${
-                      c.status === 'CONCLUIDA' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700 rounded-full'
+                    className={`text-xs px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 w-fit ${
+                      c.status === 'CONCLUIDA' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'
                     }`}
                   >
-                    {c.status === 'CONCLUIDA' ? 'Concluída' : 'Rascunho'}
+                    {c.status === 'CONCLUIDA' && <CheckCircle2 size={12} />} {c.status === 'CONCLUIDA' ? 'Concluída' : 'Rascunho'}
                   </span>
                   <span className="text-xs text-gray-500">{formatDateTime(new Date(c.createdAt))}</span>
                 </div>
@@ -258,7 +274,7 @@ export default function CountsPage() {
                         <span>
                           esperado <strong>{l.expectedQty}</strong> · contado <strong>{l.countedQty}</strong>
                           {diff !== 0 && (
-                            <span className={diff > 0 ? 'text-green-600 ml-2' : 'text-red-600 ml-2'}>
+                            <span className={diff > 0 ? 'text-emerald-600 ml-2' : 'text-red-600 ml-2'}>
                               ({diff > 0 ? '+' : ''}{diff})
                             </span>
                           )}
@@ -270,9 +286,9 @@ export default function CountsPage() {
                 {c.status !== 'CONCLUIDA' && (
                   <button
                     onClick={() => completeCount(c.id)}
-                    className="mt-3 text-sm text-blue-600 hover:underline"
+                    className="mt-3 text-sm text-blue-600 hover:underline flex items-center gap-1"
                   >
-                    Concluir e Ajustar Stock →
+                    Concluir e Ajustar Stock <ArrowRight size={13} />
                   </button>
                 )}
               </div>
@@ -288,9 +304,9 @@ export default function CountsPage() {
             <h2 className="text-lg font-semibold text-gray-900">Localizações ({locations.length})</h2>
             <button
               onClick={() => setShowLocationForm(!showLocationForm)}
-              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors flex items-center gap-2"
             >
-              {showLocationForm ? 'Cancelar' : '+ Nova Localização'}
+              {showLocationForm ? <><X size={15} /> Cancelar</> : <><Plus size={15} /> Nova Localização</>}
             </button>
           </div>
 
@@ -348,9 +364,9 @@ export default function CountsPage() {
               <button
                 type="submit"
                 disabled={savingLocation}
-                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
-                {savingLocation ? 'A criar...' : 'Criar Localização'}
+                {savingLocation ? <><Loader2 size={16} className="animate-spin" /> A criar...</> : <><Plus size={16} /> Criar Localização</>}
               </button>
             </form>
           )}

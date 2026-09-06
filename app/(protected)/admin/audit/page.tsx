@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
+import { AUDIT_ACTION, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { Search, Download, SlidersHorizontal, Sparkles } from 'lucide-react'
 
 interface AuditLog {
   id: string
@@ -13,13 +15,6 @@ interface AuditLog {
   entityId: string
   before?: Record<string, unknown>
   after?: Record<string, unknown>
-}
-
-const ACTION_META: Record<string, { emoji: string; accent: string }> = {
-  CREATE: { emoji: '➕', accent: 'bg-emerald-100 text-emerald-800' },
-  UPDATE: { emoji: '✏️', accent: 'bg-blue-100 text-blue-800' },
-  DELETE: { emoji: '🗑️', accent: 'bg-red-100 text-red-800' },
-  STATE_CHANGE: { emoji: '🔄', accent: 'bg-purple-100 text-purple-800' },
 }
 
 export default function AuditPage() {
@@ -84,7 +79,7 @@ export default function AuditPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">🔍</div>
+          <Search size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar auditoria...</p>
         </div>
       </div>
@@ -96,20 +91,22 @@ export default function AuditPage() {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <span>🔍</span> Auditoria
+            <Search size={28} /> Auditoria
           </h1>
           <p className="text-gray-500 text-sm mt-1">Registo imutável de todas as acções no sistema</p>
         </div>
         <button
           onClick={exportCSV}
-          className="px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-medium text-sm shadow-sm shadow-emerald-600/20 transition-colors"
+          className="px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-medium text-sm shadow-sm shadow-emerald-600/20 transition-colors flex items-center gap-2"
         >
-          ⬇️ Exportar CSV
+          <Download size={16} /> Exportar CSV
         </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">🎛️ Filtros</h2>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <SlidersHorizontal size={16} /> Filtros
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1">Módulo</label>
@@ -140,10 +137,10 @@ export default function AuditPage() {
               className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
             >
               <option value="">Todas</option>
-              <option value="CREATE">➕ Criar</option>
-              <option value="UPDATE">✏️ Actualizar</option>
-              <option value="DELETE">🗑️ Apagar</option>
-              <option value="STATE_CHANGE">🔄 Mudança Estado</option>
+              <option value="CREATE">Criar</option>
+              <option value="UPDATE">Actualizar</option>
+              <option value="DELETE">Apagar</option>
+              <option value="STATE_CHANGE">Mudança Estado</option>
             </select>
           </div>
 
@@ -182,15 +179,13 @@ export default function AuditPage() {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {logs.map((log) => {
-              const meta = ACTION_META[log.action] || { emoji: '•', accent: 'bg-gray-100 text-gray-700' }
+              const meta = AUDIT_ACTION[log.action] || { ...FALLBACK_META, label: log.action }
               return (
                 <tr key={log.id} className="hover:bg-gray-50/70 transition-colors">
                   <td className="px-6 py-3 text-xs text-gray-500">{formatDateTime(new Date(log.createdAt))}</td>
                   <td className="px-6 py-3 text-sm text-gray-800">{log.user.name}</td>
                   <td className="px-6 py-3 text-sm">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${meta.accent}`}>
-                      {meta.emoji} {log.action}
-                    </span>
+                    <StatusBadge meta={meta} />
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-600">{log.module}</td>
                   <td className="px-6 py-3 text-sm text-gray-500 font-mono text-xs">
@@ -202,7 +197,9 @@ export default function AuditPage() {
             {logs.length === 0 && (
               <tr>
                 <td colSpan={5} className="px-6 py-12 text-center text-gray-400 text-sm">
-                  ✨ Sem registos para os filtros seleccionados
+                  <span className="inline-flex items-center gap-2">
+                    <Sparkles size={16} /> Sem registos para os filtros seleccionados
+                  </span>
                 </td>
               </tr>
             )}

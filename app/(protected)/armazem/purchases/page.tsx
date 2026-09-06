@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
+import { PURCHASE_ORDER_STATUS, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { Receipt, Building2, Loader2, X, Plus, AlertTriangle, ArrowRight } from 'lucide-react'
 
 interface Supplier {
   id: string
@@ -40,22 +42,6 @@ interface LineDraft {
   unitPrice: number
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  RASCUNHO: 'Rascunho',
-  ENVIADA: 'Enviada',
-  PARCIAL: 'Parcial',
-  RECEBIDA: 'Recebida',
-  CANCELADA: 'Cancelada',
-}
-
-const STATUS_COLORS: Record<string, string> = {
-  RASCUNHO: 'bg-gray-100 text-gray-800',
-  ENVIADA: 'bg-blue-100 text-blue-800',
-  PARCIAL: 'bg-yellow-100 text-yellow-800',
-  RECEBIDA: 'bg-green-100 text-green-800',
-  CANCELADA: 'bg-red-100 text-red-800',
-}
-
 export default function PurchasesPage() {
   const [tab, setTab] = useState<'orders' | 'suppliers'>('orders')
 
@@ -64,13 +50,11 @@ export default function PurchasesPage() {
   const [items, setItems] = useState<ItemOption[]>([])
   const [loading, setLoading] = useState(true)
 
-  // New PO form
   const [showPOForm, setShowPOForm] = useState(false)
   const [poSupplierId, setPOSupplierId] = useState('')
   const [poLines, setPOLines] = useState<LineDraft[]>([{ itemId: '', qtyOrdered: 1, unitPrice: 0 }])
   const [savingPO, setSavingPO] = useState(false)
 
-  // New supplier form
   const [showSupplierForm, setShowSupplierForm] = useState(false)
   const [supplierForm, setSupplierForm] = useState({ name: '', nif: '', contact: '', phone: '', email: '', leadTimeDays: 7 })
   const [savingSupplier, setSavingSupplier] = useState(false)
@@ -152,28 +136,43 @@ export default function PurchasesPage() {
     if (res.ok) await load()
   }
 
-  if (loading) return <div className='p-8 flex items-center justify-center min-h-[60vh]'><div className='text-center text-gray-400'><div className='text-4xl mb-3 animate-pulse'>🏭</div><p className='text-sm'>A carregar...</p></div></div>
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <div className="text-center text-gray-400">
+          <Receipt size={40} className="mx-auto mb-3 animate-pulse" />
+          <p className="text-sm">A carregar...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3"><span>🧾</span> Compras e Fornecedores</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <Receipt size={28} /> Compras e Fornecedores
+      </h1>
 
       <div className="flex gap-4 mb-6 border-b border-gray-200">
         <button
           onClick={() => setTab('orders')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'orders' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-1.5 ${tab === 'orders' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          🧾 Encomendas
+          <Receipt size={15} /> Encomendas
         </button>
         <button
           onClick={() => setTab('suppliers')}
-          className={`px-4 py-2 font-medium text-sm ${tab === 'suppliers' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
+          className={`px-4 py-2 font-medium text-sm flex items-center gap-1.5 ${tab === 'suppliers' ? 'border-b-2 border-amber-700 text-amber-800' : 'text-gray-500'}`}
         >
-          🏢 Fornecedores
+          <Building2 size={15} /> Fornecedores
         </button>
       </div>
 
-      {error && <div className="p-3 bg-red-100 text-red-800 rounded text-sm mb-4">{error}</div>}
+      {error && (
+        <div className="p-3 bg-red-100 text-red-800 rounded-xl text-sm mb-4 flex items-center gap-2">
+          <AlertTriangle size={16} /> {error}
+        </div>
+      )}
 
       {tab === 'orders' && (
         <div>
@@ -181,9 +180,9 @@ export default function PurchasesPage() {
             <h2 className="text-lg font-semibold text-gray-900">Encomendas ({orders.length})</h2>
             <button
               onClick={() => setShowPOForm(!showPOForm)}
-              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors flex items-center gap-2"
             >
-              {showPOForm ? 'Cancelar' : '+ Nova Encomenda'}
+              {showPOForm ? <><X size={15} /> Cancelar</> : <><Plus size={15} /> Nova Encomenda</>}
             </button>
           </div>
 
@@ -259,50 +258,51 @@ export default function PurchasesPage() {
               <button
                 type="submit"
                 disabled={savingPO}
-                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
-                {savingPO ? 'A criar...' : 'Criar Encomenda'}
+                {savingPO ? <><Loader2 size={16} className="animate-spin" /> A criar...</> : <><Plus size={16} /> Criar Encomenda</>}
               </button>
             </form>
           )}
 
           <div className="space-y-3">
-            {orders.map((o) => (
-              <div key={o.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-gray-900">{o.supplier.name}</p>
-                    <p className="text-xs text-gray-500">{formatDateTime(new Date(o.createdAt))}</p>
+            {orders.map((o) => {
+              const meta = PURCHASE_ORDER_STATUS[o.status] || { ...FALLBACK_META, label: o.status }
+              return (
+                <div key={o.id} className="p-4 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-medium text-gray-900">{o.supplier.name}</p>
+                      <p className="text-xs text-gray-500">{formatDateTime(new Date(o.createdAt))}</p>
+                    </div>
+                    <StatusBadge meta={meta} />
                   </div>
-                  <span className={`text-xs px-2 py-1 rounded font-medium ${STATUS_COLORS[o.status]}`}>
-                    {STATUS_LABELS[o.status]}
-                  </span>
+                  <ul className="mt-2 text-sm text-gray-700 space-y-1">
+                    {o.lines.map((l) => (
+                      <li key={l.id}>
+                        {l.item.sku} — {l.item.description}: <strong>{l.qtyOrdered}</strong> {l.item.unit} × {Number(l.unitPrice).toLocaleString('pt-PT')} Kz
+                      </li>
+                    ))}
+                  </ul>
+                  {o.status === 'RASCUNHO' && (
+                    <button
+                      onClick={() => advanceStatus(o.id, 'ENVIADA')}
+                      className="mt-3 text-sm text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      Marcar como Enviada <ArrowRight size={13} />
+                    </button>
+                  )}
+                  {o.status === 'ENVIADA' && (
+                    <button
+                      onClick={() => advanceStatus(o.id, 'RECEBIDA')}
+                      className="mt-3 text-sm text-emerald-600 hover:underline flex items-center gap-1"
+                    >
+                      Marcar como Recebida <ArrowRight size={13} />
+                    </button>
+                  )}
                 </div>
-                <ul className="mt-2 text-sm text-gray-700 space-y-1">
-                  {o.lines.map((l) => (
-                    <li key={l.id}>
-                      {l.item.sku} — {l.item.description}: <strong>{l.qtyOrdered}</strong> {l.item.unit} × {Number(l.unitPrice).toLocaleString('pt-PT')} Kz
-                    </li>
-                  ))}
-                </ul>
-                {o.status === 'RASCUNHO' && (
-                  <button
-                    onClick={() => advanceStatus(o.id, 'ENVIADA')}
-                    className="mt-3 text-sm text-blue-600 hover:underline"
-                  >
-                    Marcar como Enviada →
-                  </button>
-                )}
-                {o.status === 'ENVIADA' && (
-                  <button
-                    onClick={() => advanceStatus(o.id, 'RECEBIDA')}
-                    className="mt-3 text-sm text-green-600 hover:underline"
-                  >
-                    Marcar como Recebida →
-                  </button>
-                )}
-              </div>
-            ))}
+              )
+            })}
             {orders.length === 0 && <p className="text-sm text-gray-500">Sem encomendas registadas.</p>}
           </div>
         </div>
@@ -314,9 +314,9 @@ export default function PurchasesPage() {
             <h2 className="text-lg font-semibold text-gray-900">Fornecedores ({suppliers.length})</h2>
             <button
               onClick={() => setShowSupplierForm(!showSupplierForm)}
-              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors"
+              className="px-4 py-2.5 bg-amber-700 text-white rounded-xl hover:bg-amber-800 text-sm font-medium shadow-sm shadow-amber-700/20 transition-colors flex items-center gap-2"
             >
-              {showSupplierForm ? 'Cancelar' : '+ Novo Fornecedor'}
+              {showSupplierForm ? <><X size={15} /> Cancelar</> : <><Plus size={15} /> Novo Fornecedor</>}
             </button>
           </div>
 
@@ -382,9 +382,9 @@ export default function PurchasesPage() {
               <button
                 type="submit"
                 disabled={savingSupplier}
-                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors"
+                className="w-full px-4 py-2.5 bg-amber-700 text-white font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
-                {savingSupplier ? 'A criar...' : 'Criar Fornecedor'}
+                {savingSupplier ? <><Loader2 size={16} className="animate-spin" /> A criar...</> : <><Plus size={16} /> Criar Fornecedor</>}
               </button>
             </form>
           )}

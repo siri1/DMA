@@ -5,6 +5,8 @@ import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import type { WorkOrder, Intervention } from '@prisma/client'
 import { formatDate, formatDateTime } from '@/lib/formatters'
+import { WORKORDER_STATUS, WORKORDER_PRIORITY, INTERVENTION_RESULT, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
+import { ClipboardList, ClipboardCheck, AlertTriangle, Loader2, Check, X, Plus, Wrench, Zap } from 'lucide-react'
 
 interface InterventionFormData {
   diagnosis: string
@@ -18,29 +20,6 @@ const emptyForm: InterventionFormData = {
   activities: '',
   result: '',
   laborMinutes: '',
-}
-
-const STATUS_META: Record<string, { emoji: string; accent: string }> = {
-  ABERTA: { emoji: '🆕', accent: 'bg-blue-100 text-blue-800' },
-  EM_CURSO: { emoji: '⏳', accent: 'bg-amber-100 text-amber-800' },
-  EM_DIAGNOSTICO: { emoji: '🩺', accent: 'bg-purple-100 text-purple-800' },
-  EM_REPARACAO: { emoji: '🔧', accent: 'bg-orange-100 text-orange-800' },
-  AGUARDA_MATERIAL: { emoji: '📦', accent: 'bg-red-100 text-red-800' },
-  EM_INSPECCAO: { emoji: '🔎', accent: 'bg-indigo-100 text-indigo-800' },
-  RESOLVIDA: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800' },
-}
-
-const PRIORITY_META: Record<string, string> = {
-  CRITICA: '🔴',
-  ALTA: '🟠',
-  MEDIA: '🟡',
-  BAIXA: '🟢',
-}
-
-const RESULT_META: Record<string, { emoji: string; accent: string }> = {
-  CONCLUIDA: { emoji: '✅', accent: 'bg-emerald-100 text-emerald-800' },
-  PENDENTE: { emoji: '⏸️', accent: 'bg-gray-100 text-gray-800' },
-  REQUER_NOVA: { emoji: '🔁', accent: 'bg-amber-100 text-amber-800' },
 }
 
 export default function WorkOrderDetailPage() {
@@ -120,21 +99,21 @@ export default function WorkOrderDetailPage() {
     return (
       <div className="p-8 flex items-center justify-center min-h-[60vh]">
         <div className="text-center text-gray-400">
-          <div className="text-4xl mb-3 animate-pulse">🛠️</div>
+          <ClipboardList size={40} className="mx-auto mb-3 animate-pulse" />
           <p className="text-sm">A carregar...</p>
         </div>
       </div>
     )
   }
-  if (!workOrder) return <div className="p-8">❌ OT não encontrada</div>
+  if (!workOrder) return <div className="p-8">OT não encontrada</div>
 
-  const status = STATUS_META[workOrder.status] || { emoji: '❔', accent: 'bg-gray-100 text-gray-800' }
+  const status = WORKORDER_STATUS[workOrder.status] || { ...FALLBACK_META, label: workOrder.status }
 
   return (
     <div className="p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <span>🛠️</span> {workOrder.number}
+          <ClipboardList size={28} /> {workOrder.number}
         </h1>
         <p className="text-gray-500 mt-1">{workOrder.summary}</p>
       </div>
@@ -142,19 +121,21 @@ export default function WorkOrderDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">📋 Detalhes</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <ClipboardCheck size={18} /> Detalhes
+            </h2>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm">
               <div>
                 <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Estado</dt>
                 <dd className="mt-1">
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${status.accent}`}>
-                    {status.emoji} {workOrder.status}
-                  </span>
+                  <StatusBadge meta={status} />
                 </dd>
               </div>
               <div>
                 <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Prioridade</dt>
-                <dd className="text-gray-800 mt-1">{PRIORITY_META[workOrder.priority] || '⚪'} {workOrder.priority}</dd>
+                <dd className="mt-1">
+                  <StatusBadge meta={WORKORDER_PRIORITY[workOrder.priority] || { ...FALLBACK_META, badge: 'bg-gray-400 text-white', label: workOrder.priority }} />
+                </dd>
               </div>
               <div>
                 <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Origem</dt>
@@ -167,7 +148,7 @@ export default function WorkOrderDetailPage() {
               {workOrder.dueAt && (
                 <div>
                   <dt className="font-medium text-gray-500 text-xs uppercase tracking-wide">Prazo</dt>
-                  <dd className="text-gray-800 mt-1">⏰ {formatDate(workOrder.dueAt)}</dd>
+                  <dd className="text-gray-800 mt-1">{formatDate(workOrder.dueAt)}</dd>
                 </div>
               )}
             </dl>
@@ -175,15 +156,17 @@ export default function WorkOrderDetailPage() {
 
           {showForm && (
             <form onSubmit={submitIntervention} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4">
-              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">➕ Nova Intervenção</h2>
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <Plus size={17} /> Nova Intervenção
+              </h2>
               {error && (
                 <div className="flex items-center gap-2 p-3 bg-red-100 text-red-800 rounded-xl text-sm">
-                  <span>⚠️</span> {error}
+                  <AlertTriangle size={16} /> {error}
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">🩺 Diagnóstico</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Diagnóstico</label>
                 <textarea
                   value={form.diagnosis}
                   onChange={(e) => setForm({ ...form, diagnosis: e.target.value })}
@@ -193,7 +176,7 @@ export default function WorkOrderDetailPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">🔧 Actividades</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Actividades</label>
                 <textarea
                   value={form.activities}
                   onChange={(e) => setForm({ ...form, activities: e.target.value })}
@@ -204,21 +187,21 @@ export default function WorkOrderDetailPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">🎯 Resultado</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Resultado</label>
                   <select
                     value={form.result}
                     onChange={(e) => setForm({ ...form, result: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
                   >
                     <option value="">Em curso...</option>
-                    <option value="CONCLUIDA">✅ Concluída</option>
-                    <option value="PENDENTE">⏸️ Pendente</option>
-                    <option value="REQUER_NOVA">🔁 Requer Nova Intervenção</option>
+                    <option value="CONCLUIDA">Concluída</option>
+                    <option value="PENDENTE">Pendente</option>
+                    <option value="REQUER_NOVA">Requer Nova Intervenção</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">⏱️ Tempo (min)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tempo (min)</label>
                   <input
                     type="number"
                     min={0}
@@ -233,9 +216,17 @@ export default function WorkOrderDetailPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-medium transition-colors"
+                  className="px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-medium transition-colors flex items-center gap-2"
                 >
-                  {saving ? '⏳ A guardar...' : '✓ Guardar Intervenção'}
+                  {saving ? (
+                    <>
+                      <Loader2 size={15} className="animate-spin" /> A guardar...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={15} /> Guardar Intervenção
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -251,22 +242,24 @@ export default function WorkOrderDetailPage() {
           {interventions.length > 0 && (
             <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
               <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                🔧 Intervenções <span className="text-xs font-normal text-gray-400">({interventions.length})</span>
+                <Wrench size={18} /> Intervenções <span className="text-xs font-normal text-gray-400">({interventions.length})</span>
               </h2>
               <div className="space-y-4">
                 {interventions.map((int) => {
-                  const resultMeta = int.result ? RESULT_META[int.result] : null
+                  const resultMeta = int.result ? INTERVENTION_RESULT[int.result] : null
                   return (
                     <div key={int.id} className="border-l-4 border-blue-400 pl-4 pb-4">
                       <p className="font-medium text-gray-900">{int.diagnosis || 'Sem diagnóstico'}</p>
                       {int.activities && <p className="text-sm text-gray-600 mt-1">{int.activities}</p>}
                       {resultMeta && (
-                        <span className={`inline-flex items-center gap-1 mt-2 text-xs px-2.5 py-1 rounded-full font-medium ${resultMeta.accent}`}>
-                          {resultMeta.emoji} {int.result}
-                        </span>
+                        <div className="mt-2">
+                          <StatusBadge meta={resultMeta} />
+                        </div>
                       )}
                       {int.laborMinutes && (
-                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">⏱️ {int.laborMinutes} min de trabalho</p>
+                        <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                          <Zap size={12} /> {int.laborMinutes} min de trabalho
+                        </p>
                       )}
                       <p className="text-xs text-gray-400 mt-1">
                         {int.startedAt ? formatDateTime(int.startedAt) : 'Não iniciada'}
@@ -280,13 +273,21 @@ export default function WorkOrderDetailPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 h-fit">
-          <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">⚡ Acções</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-4">Acções</h2>
           <div className="space-y-2">
             <button
               onClick={() => setShowForm(!showForm)}
-              className="w-full px-4 py-2.5 text-left bg-blue-50 hover:bg-blue-100 rounded-xl text-sm font-medium text-blue-900 transition-colors"
+              className="w-full px-4 py-2.5 text-left bg-blue-50 hover:bg-blue-100 rounded-xl text-sm font-medium text-blue-900 transition-colors flex items-center gap-2"
             >
-              {showForm ? '− Cancelar' : '➕ Adicionar Intervenção'}
+              {showForm ? (
+                <>
+                  <X size={16} /> Cancelar
+                </>
+              ) : (
+                <>
+                  <Plus size={16} /> Adicionar Intervenção
+                </>
+              )}
             </button>
           </div>
         </div>
