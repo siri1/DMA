@@ -64,6 +64,7 @@ export const DMA_VISION_NAV: NavGroup[] = [
     items: [
       { href: '/gestao/dashboard-exec', label: 'Dashboard Executivo', icon: BarChart3, module: 'workorders' },
       { href: '/gestao/dashboard-ops', label: 'Dashboard Operacional', icon: TrendingUp, module: 'workorders' },
+      { href: '/gestao/technician-workload', label: 'Carga dos Técnicos', icon: Users, module: 'interventions' },
     ],
   },
   {

@@ -193,6 +193,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 4.6 — Semana-padrão de 40h para cálculo de utilização
+**Presuposto:** Sem indicação do cliente sobre o horário de trabalho real, `modules/technicians/workload.ts` assume uma semana-padrão de 5 dias × 8h (40h) apenas para comparação de utilização (não para folha de pagamento). Horas trabalhadas vêm de `Intervention.laborMinutes` já registado no relógio de ponto por intervenção — não existe um relógio de turno separado.
+
+**Razão:** Não há campo de horário/turno no schema nem foi fornecido pelo cliente. 40h/semana é o padrão mais comum e serve de referência até se confirmar o horário real da Kwanda.
+
+**Decisão:** Provisório — ajustar `STANDARD_SHIFT_HOURS`/`WEEKLY_TARGET_HOURS` se o cliente indicar um horário diferente.
+
+---
+
 ## 5. Peças e Stock
 
 ### 5.1 — StockMovement é imutável (append-only)
