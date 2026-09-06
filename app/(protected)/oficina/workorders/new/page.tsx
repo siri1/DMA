@@ -1,7 +1,24 @@
 'use client'
 
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { WorkOrderForm } from '@/components/domain/WorkOrderForm'
 import { ClipboardList } from 'lucide-react'
+
+function NewWorkOrderForm() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const presetAssetId = searchParams.get('assetId') || undefined
+
+  return (
+    <WorkOrderForm
+      assetId={presetAssetId}
+      onSuccess={(workOrderId) => {
+        router.push(`/oficina/workorders/${workOrderId}`)
+      }}
+    />
+  )
+}
 
 export default function NewWorkOrderPage() {
   return (
@@ -12,12 +29,9 @@ export default function NewWorkOrderPage() {
       <p className="text-gray-500 mb-8">Criar uma nova tarefa de manutenção</p>
 
       <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
-        <WorkOrderForm
-          onSuccess={() => {
-            typeof window !== 'undefined' &&
-              (window.location.href = '/oficina/workorders')
-          }}
-        />
+        <Suspense fallback={<p className="text-sm text-gray-400">A carregar...</p>}>
+          <NewWorkOrderForm />
+        </Suspense>
       </div>
     </div>
   )

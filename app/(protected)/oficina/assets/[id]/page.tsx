@@ -7,7 +7,8 @@ import { StateTransitionModal } from '@/components/domain/StateTransitionModal'
 import { formatDate, formatDateTime } from '@/lib/formatters'
 import type { Asset, AssetStatus, StateTransition } from '@prisma/client'
 import { ASSET_STATUS, FALLBACK_META } from '@/lib/status-icons'
-import { Truck, Pencil, X, ClipboardList, History, ArrowLeftRight, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { Truck, Pencil, X, ClipboardList, History, ArrowLeftRight, ArrowRight, Plus } from 'lucide-react'
 
 export default function AssetDetailPage() {
   const params = useParams()
@@ -74,20 +75,28 @@ export default function AssetDetailPage() {
           </h1>
           <p className="text-gray-500 mt-1 font-mono text-sm">{asset.assetCode}</p>
         </div>
-        <button
-          onClick={() => setEditing(!editing)}
-          className="px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-colors flex items-center gap-2"
-        >
-          {editing ? (
-            <>
-              <X size={16} /> Cancelar
-            </>
-          ) : (
-            <>
-              <Pencil size={16} /> Editar
-            </>
-          )}
-        </button>
+        <div className="flex gap-2">
+          <Link
+            href={`/oficina/workorders/new?assetId=${assetId}`}
+            className="px-4 py-2.5 bg-orange-600 text-white font-medium rounded-xl hover:bg-orange-700 shadow-sm shadow-orange-600/20 transition-colors flex items-center gap-2"
+          >
+            <Plus size={16} /> Nova OT
+          </Link>
+          <button
+            onClick={() => setEditing(!editing)}
+            className="px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 shadow-sm shadow-blue-600/20 transition-colors flex items-center gap-2"
+          >
+            {editing ? (
+              <>
+                <X size={16} /> Cancelar
+              </>
+            ) : (
+              <>
+                <Pencil size={16} /> Editar
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
