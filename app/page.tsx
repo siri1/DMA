@@ -21,11 +21,10 @@ export default async function RootPage() {
   //  - CLIENTE_INTERNO must never see costs (CLAUDE.md sec4) - the
   //    executive dashboard shows stock value, and 'workorders:view' (which
   //    the dashboard API requires) deliberately excludes this role anyway.
-  //  - ARMAZEM's only module is Modulo de Pecas; the dashboard lives inside
-  //    DMA Vision's sidebar (gestao/layout.tsx, DMA_VISION_NAV), which
-  //    ARMAZEM has no permission to see any item of, and it can't have only
-  //    one module and also get a "Trocar de Modulo" escape hatch. Landing
-  //    it there would show an all-but-empty sidebar with no way back.
+  //  - ARMAZEM's only module is Modulo de Pecas; the (DMA Vision) executive
+  //    dashboard lives inside a sidebar ARMAZEM has no permission to see any
+  //    item of, and it can't have only one module and also get a "Trocar de
+  //    Modulo" escape hatch. It gets its own Peças dashboard instead.
   if (role === 'PAINEL') {
     redirect('/painel')
   }
@@ -33,7 +32,7 @@ export default async function RootPage() {
     redirect('/oficina/assets')
   }
   if (role === 'ARMAZEM') {
-    redirect('/armazem/inventory')
+    redirect('/armazem/dashboard')
   }
 
   redirect('/gestao/dashboard-exec')

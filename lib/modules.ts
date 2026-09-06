@@ -52,7 +52,7 @@ export function getModuleEntryPath(moduleId: ModuleId, role: UserRole): string {
   if (moduleId === 'dma_vision') {
     return role === 'CLIENTE_INTERNO' ? '/oficina/assets' : '/gestao/dashboard-ops'
   }
-  return '/armazem/inventory'
+  return '/armazem/dashboard'
 }
 
 export function getModulesForRole(role: UserRole): ModuleInfo[] {

@@ -14,6 +14,7 @@ import {
   Search,
   Users,
   CalendarDays,
+  LayoutDashboard,
 } from 'lucide-react'
 import type { Permission } from '@/lib/rbac'
 
@@ -82,6 +83,7 @@ export const PECAS_NAV: NavGroup[] = [
     label: 'Peças',
     icon: Package,
     items: [
+      { href: '/armazem/dashboard', label: 'Dashboard', icon: LayoutDashboard, module: 'items' },
       { href: '/armazem/inventory', label: 'Stocks e Artigos', icon: Package, module: 'items' },
       { href: '/armazem/receipts', label: 'Recepção', icon: Truck, module: 'stocks' },
       { href: '/armazem/purchases', label: 'Compras e Fornecedores', icon: Receipt, module: 'suppliers' },
