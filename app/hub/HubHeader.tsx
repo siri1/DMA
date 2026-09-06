@@ -15,7 +15,7 @@ export function HubHeader({ userName, role }: { userName: string; role: UserRole
       <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-9 w-9 rounded-lg object-cover shrink-0" />
+          <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-14 w-14 rounded-lg object-cover shrink-0" />
           <div>
             <h1 className="text-lg font-bold text-white">DMA Vision</h1>
             <p className="text-sm text-slate-400">

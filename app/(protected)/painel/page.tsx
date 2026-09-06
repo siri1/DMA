@@ -97,7 +97,7 @@ export default function PainelTV() {
       <div className="absolute top-6 left-8 right-8 flex justify-between items-center text-white/70 text-lg">
         <span className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/branding/kwanda-logo.jpg" alt="" className="h-8 w-8 rounded-md object-cover" />
+          <img src="/branding/kwanda-logo.jpg" alt="" className="h-12 w-12 rounded-md object-cover" />
           DMA Vision — Oficina
         </span>
         <span>{now.toLocaleTimeString('pt-PT')}</span>

@@ -49,9 +49,9 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
 
   return (
     <aside className="w-64 flex flex-col bg-gray-950 text-white overflow-y-auto shrink-0">
-      <div className="bg-white px-6 py-3 flex items-center justify-center">
+      <div className="bg-white px-6 py-4 flex items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-9 w-9 rounded-lg object-cover" />
+        <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-14 w-14 rounded-lg object-cover" />
       </div>
 
       <div className={`bg-gradient-to-br ${accent} p-6`}>

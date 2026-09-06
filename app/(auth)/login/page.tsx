@@ -103,7 +103,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white p-2.5 mb-4 shadow-lg ring-1 ring-white/20">
+          <div className="inline-flex items-center justify-center w-28 h-28 rounded-2xl bg-white p-3.5 mb-4 shadow-lg ring-1 ring-white/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="w-full h-full rounded-xl object-cover" />
           </div>
