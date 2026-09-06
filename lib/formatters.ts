@@ -1,15 +1,30 @@
-export function formatDate(date: Date | null | undefined): string {
+/**
+ * Data vinda de uma API (fetch().then(r => r.json())) chega sempre como
+ * string ISO, nunca como Date - JSON não tem tipo de data. O tipo Prisma
+ * (Date) só é verdade no servidor; no cliente é sempre string. Aceitar
+ * ambos aqui evita ter de normalizar em cada local que chama formatDate.
+ */
+function toDate(value: Date | string): Date | null {
+  const d = value instanceof Date ? value : new Date(value)
+  return isNaN(d.getTime()) ? null : d
+}
+
+export function formatDate(date: Date | string | null | undefined): string {
   if (!date) return ''
-  return date.toLocaleDateString('pt-PT', {
+  const d = toDate(date)
+  if (!d) return ''
+  return d.toLocaleDateString('pt-PT', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
   })
 }
 
-export function formatDateTime(date: Date | null | undefined): string {
+export function formatDateTime(date: Date | string | null | undefined): string {
   if (!date) return ''
-  return date.toLocaleString('pt-PT', {
+  const d = toDate(date)
+  if (!d) return ''
+  return d.toLocaleString('pt-PT', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
