@@ -211,6 +211,17 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 4.8 — Revisão de qualidade usa o estado EM_INSPECCAO já existente; OFICINA não se auto-aprova
+**Presuposto:** Um documento externo propôs substituir a máquina de estados da OT por um fluxo novo de 20 estados, incluindo facturação/pagamento. Não foi adoptado — CLAUDE.md §6 já define e `lib/state-machine.ts` já implementa (com 32+ testes) `EM_REPARACAO → EM_INSPECCAO → RESOLVIDA`, que já é a revisão de qualidade. A única mudança feita foi de autorização: `EM_INSPECCAO → RESOLVIDA` (aprovar) e `EM_INSPECCAO → EM_REPARACAO` (rejeitar/pedir nova reparação) passam a exigir `ADMIN` ou `GESTAO` — deixam de incluir `OFICINA`, para que o técnico que reparou não seja também quem aprova a própria qualidade.
+
+**Razão:** Pedido explícito do cliente: adicionar revisão de qualidade "como um passo, nada mais" à máquina de estados existente — não substituí-la, nem construir facturação/pagamento (fora de âmbito, CLAUDE.md §3).
+
+**Descoberta durante a implementação:** não existia nenhuma UI para mudar o estado de uma OT manualmente (nem sequer para chegar a `EM_INSPECCAO`) — `transitionWorkOrderStateAction` estava definida mas nunca chamada. Foi adicionado um painel "Mudar Estado" à página de detalhe da OT (`getAvailableTransitions()` em `lib/state-machine.ts` + `GET /api/workorders/[id]/transitions`), sem o qual o passo de qualidade seria inatingível na prática.
+
+**Facturação/Primavera GL:** não implementado — mantém-se apenas como ponto de extensão documentado, conforme já decidido.
+
+---
+
 ## 5. Peças e Stock
 
 ### 5.1 — StockMovement é imutável (append-only)

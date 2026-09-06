@@ -3,10 +3,29 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import type { WorkOrder } from '@prisma/client'
+import type { WorkOrder, WorkOrderStatus } from '@prisma/client'
 import { formatDate, formatDateTime, formatCurrency } from '@/lib/formatters'
 import { WORKORDER_STATUS, WORKORDER_PRIORITY, INTERVENTION_RESULT, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
-import { ClipboardList, ClipboardCheck, AlertTriangle, Loader2, Check, Play, Square, Wrench, Timer, Wallet } from 'lucide-react'
+import { transitionWorkOrderStateAction } from '@/modules/states/actions'
+import {
+  ClipboardList,
+  ClipboardCheck,
+  AlertTriangle,
+  Loader2,
+  Check,
+  Play,
+  Square,
+  Wrench,
+  Timer,
+  Wallet,
+  ArrowRight,
+  X,
+} from 'lucide-react'
+
+interface AvailableTransition {
+  toState: WorkOrderStatus
+  reasonRequired: boolean
+}
 
 interface InterventionRow {
   id: string
@@ -46,11 +65,15 @@ export default function WorkOrderDetailPage() {
 
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null)
   const [interventions, setInterventions] = useState<InterventionRow[]>([])
+  const [transitions, setTransitions] = useState<AvailableTransition[]>([])
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
   const [stopping, setStopping] = useState(false)
   const [showStopForm, setShowStopForm] = useState(false)
   const [stopForm, setStopForm] = useState<StopFormData>(emptyStopForm)
+  const [pendingTransition, setPendingTransition] = useState<AvailableTransition | null>(null)
+  const [transitionReason, setTransitionReason] = useState('')
+  const [transitioning, setTransitioning] = useState(false)
   const [error, setError] = useState('')
   const [now, setNow] = useState(new Date())
 
@@ -60,13 +83,36 @@ export default function WorkOrderDetailPage() {
       if (woRes.ok) {
         setWorkOrder(await woRes.json())
 
-        const intRes = await fetch(`/api/workorders/${workOrderId}/interventions`)
-        if (intRes.ok) {
-          setInterventions(await intRes.json())
-        }
+        const [intRes, transRes] = await Promise.all([
+          fetch(`/api/workorders/${workOrderId}/interventions`),
+          fetch(`/api/workorders/${workOrderId}/transitions`),
+        ])
+        if (intRes.ok) setInterventions(await intRes.json())
+        if (transRes.ok) setTransitions(await transRes.json())
       }
     } finally {
       setLoading(false)
+    }
+  }
+
+  const submitTransition = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pendingTransition) return
+    if (pendingTransition.reasonRequired && !transitionReason.trim()) {
+      setError('Motivo obrigatório para esta transição')
+      return
+    }
+    setTransitioning(true)
+    setError('')
+    try {
+      await transitionWorkOrderStateAction(workOrderId, pendingTransition.toState, transitionReason || undefined)
+      setPendingTransition(null)
+      setTransitionReason('')
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro na transição de estado')
+    } finally {
+      setTransitioning(false)
     }
   }
 
@@ -202,6 +248,65 @@ export default function WorkOrderDetailPage() {
               )}
             </dl>
           </div>
+
+          {transitions.length > 0 && (
+            <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <ArrowRight size={18} /> Mudar Estado
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {transitions.map((t) => {
+                  const targetMeta = WORKORDER_STATUS[t.toState] || { ...FALLBACK_META, label: t.toState }
+                  return (
+                    <button
+                      key={t.toState}
+                      onClick={() => { setPendingTransition(t); setTransitionReason(''); setError('') }}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${targetMeta.badge} hover:opacity-80`}
+                    >
+                      {targetMeta.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {pendingTransition && (
+                <form onSubmit={submitTransition} className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                  <p className="text-sm text-gray-600">
+                    Mudar para <strong>{(WORKORDER_STATUS[pendingTransition.toState] || { label: pendingTransition.toState }).label}</strong>
+                    {workOrder.status === 'EM_INSPECCAO' && pendingTransition.toState === 'EM_REPARACAO' && ' — devolver para reparação (rejeitar qualidade)'}
+                    {workOrder.status === 'EM_INSPECCAO' && pendingTransition.toState === 'RESOLVIDA' && ' — aprovar qualidade e fechar a OT'}
+                  </p>
+                  {pendingTransition.reasonRequired && (
+                    <textarea
+                      value={transitionReason}
+                      onChange={(e) => setTransitionReason(e.target.value)}
+                      required
+                      rows={2}
+                      placeholder="Motivo *"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm"
+                    />
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={transitioning}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 text-sm font-medium transition-colors flex items-center gap-2"
+                    >
+                      {transitioning ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setPendingTransition(null); setTransitionReason('') }}
+                      className="px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-sm font-medium transition-colors flex items-center gap-1.5"
+                    >
+                      <X size={14} /> Cancelar
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
 
           {showStopForm && activeIntervention && (
             <form onSubmit={submitStop} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6 mb-6 space-y-4">

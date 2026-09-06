@@ -152,7 +152,7 @@ ASSET_TRANSITIONS = {
 | EM_DIAGNOSTICO | Diagnosticando avaria | EM_REPARACAO, CANCELADA |
 | EM_REPARACAO | Reparação em curso | AGUARDA_MATERIAL, EM_INSPECCAO, CANCELADA |
 | AGUARDA_MATERIAL | Falta stock ou material não recebido | EM_REPARACAO, CANCELADA |
-| EM_INSPECCAO | Inspecção final / QA | RESOLVIDA, EM_REPARACAO |
+| EM_INSPECCAO | Inspecção final / QA — aprovação exige ADMIN ou GESTAO (não o próprio OFICINA) | RESOLVIDA, EM_REPARACAO |
 | RESOLVIDA | Concluída com sucesso (terminal) | — |
 | PENDENTE | Suspensa (não terminal) | ABERTA |
 | CANCELADA | Anulada (terminal) | — |
@@ -183,9 +183,10 @@ WORKORDER_TRANSITIONS = {
     {fromState: 'AGUARDA_MATERIAL', toState: 'EM_REPARACAO', allowedRoles: ['ADMIN', 'OFICINA', 'ARMAZEM'], reasonRequired: false},
     {fromState: 'AGUARDA_MATERIAL', toState: 'CANCELADA', allowedRoles: ['ADMIN', 'GESTAO'], reasonRequired: true},
   ],
+  // Quality review: OFICINA cannot self-approve or self-reject its own work here.
   EM_INSPECCAO: [
-    {fromState: 'EM_INSPECCAO', toState: 'RESOLVIDA', allowedRoles: ['ADMIN', 'OFICINA'], reasonRequired: false},
-    {fromState: 'EM_INSPECCAO', toState: 'EM_REPARACAO', allowedRoles: ['ADMIN', 'OFICINA'], reasonRequired: true},
+    {fromState: 'EM_INSPECCAO', toState: 'RESOLVIDA', allowedRoles: ['ADMIN', 'GESTAO'], reasonRequired: false},
+    {fromState: 'EM_INSPECCAO', toState: 'EM_REPARACAO', allowedRoles: ['ADMIN', 'GESTAO'], reasonRequired: true},
   ],
   RESOLVIDA: [], // Terminal
   PENDENTE: [

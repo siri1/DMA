@@ -186,14 +186,24 @@ describe('State Machine - WorkOrder', () => {
       expect(result).toBe(true)
     })
 
-    it('should allow EM_INSPECCAO → RESOLVIDA for OFICINA', async () => {
+    it('should allow EM_INSPECCAO → RESOLVIDA for GESTAO (quality sign-off)', async () => {
+      const result = await canTransition(
+        'workorder',
+        'EM_INSPECCAO',
+        'RESOLVIDA',
+        'GESTAO'
+      )
+      expect(result).toBe(true)
+    })
+
+    it('should reject EM_INSPECCAO → RESOLVIDA for OFICINA (cannot self-approve)', async () => {
       const result = await canTransition(
         'workorder',
         'EM_INSPECCAO',
         'RESOLVIDA',
         'OFICINA'
       )
-      expect(result).toBe(true)
+      expect(result).toBe(false)
     })
 
     it('should allow EM_INSPECCAO → EM_REPARACAO for ADMIN', async () => {
@@ -314,7 +324,7 @@ describe('State Machine - WorkOrder', () => {
         { from: 'EM_REPARACAO', to: 'AGUARDA_MATERIAL', role: 'OFICINA' },
         { from: 'AGUARDA_MATERIAL', to: 'EM_REPARACAO', role: 'ARMAZEM' },
         { from: 'EM_REPARACAO', to: 'EM_INSPECCAO', role: 'OFICINA' },
-        { from: 'EM_INSPECCAO', to: 'RESOLVIDA', role: 'OFICINA' },
+        { from: 'EM_INSPECCAO', to: 'RESOLVIDA', role: 'GESTAO' },
       ]
 
       for (const step of steps) {

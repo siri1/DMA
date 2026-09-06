@@ -169,16 +169,20 @@ export const WORKORDER_TRANSITIONS: Record<string, StateTransition[]> = {
     },
   ],
   EM_INSPECCAO: [
+    // Quality review: approving or rejecting the work is a sign-off by
+    // someone other than the technician who performed it, so OFICINA is
+    // deliberately excluded from both outcomes here (unlike every other
+    // WorkOrder transition, which OFICINA drives on its own work).
     {
       fromState: 'EM_INSPECCAO',
       toState: 'RESOLVIDA',
-      allowedRoles: ['ADMIN', 'OFICINA'],
+      allowedRoles: ['ADMIN', 'GESTAO'],
       reasonRequired: false,
     },
     {
       fromState: 'EM_INSPECCAO',
       toState: 'EM_REPARACAO',
-      allowedRoles: ['ADMIN', 'OFICINA'],
+      allowedRoles: ['ADMIN', 'GESTAO'],
       reasonRequired: true,
     },
   ],
@@ -192,6 +196,23 @@ export const WORKORDER_TRANSITIONS: Record<string, StateTransition[]> = {
     },
   ],
   CANCELADA: [],
+}
+
+/**
+ * The transitions a given role may take from currentState - used to render
+ * "what can I do next" controls without duplicating the transition tables
+ * in the UI layer (one source of truth, per CLAUDE.md).
+ */
+export function getAvailableTransitions(
+  entityType: 'asset' | 'workorder',
+  currentState: string,
+  role: UserRole
+): { toState: string; reasonRequired: boolean }[] {
+  const transitions = entityType === 'asset' ? ASSET_TRANSITIONS : WORKORDER_TRANSITIONS
+  const fromTransitions = transitions[currentState] || []
+  return fromTransitions
+    .filter((t) => t.allowedRoles.includes(role))
+    .map((t) => ({ toState: t.toState, reasonRequired: t.reasonRequired }))
 }
 
 export async function canTransition(
