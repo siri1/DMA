@@ -6,13 +6,17 @@ import { signOut, useSession } from 'next-auth/react'
 import { LogOut, LayoutGrid, type LucideIcon } from 'lucide-react'
 import type { UserRole } from '@prisma/client'
 import { hasPermission } from '@/lib/rbac'
-import { NAV_GROUPS } from './nav-config'
+import type { NavGroup } from './nav-config'
 import { MODULE_ACCESS } from '@/lib/modules'
 
 interface SidebarProps {
   title: string
   icon: LucideIcon
   accent?: string
+  /** This module's own nav list only — DMA_VISION_NAV or PECAS_NAV. Each
+   * layout is walled off from the other; nothing here ever links into the
+   * other module's pages. Switching modules happens only via the Hub. */
+  navGroups: NavGroup[]
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -24,18 +28,18 @@ const ROLE_LABELS: Record<string, string> = {
   PAINEL: 'Painel',
 }
 
-export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-indigo-800' }: SidebarProps) {
+export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-indigo-800', navGroups }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const role = (session?.user as any)?.role as UserRole | undefined
   const userName = session?.user?.name
 
-  // Every role sees every module it has 'view' rights to — this is the
-  // single nav source for all 4 protected areas, so Peças (and everything
-  // else) is always reachable instead of being hand-curated per layout.
+  // Items within this module's own nav are still filtered by RBAC per
+  // viewer - the wall is about which list a layout passes in, not a
+  // second permission system.
   const visibleGroups = role
-    ? NAV_GROUPS.map((group) => ({
+    ? navGroups.map((group) => ({
         ...group,
         items: group.items.filter((item) => hasPermission(role, item.module, item.permission || 'view')),
       })).filter((group) => group.items.length > 0)

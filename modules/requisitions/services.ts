@@ -55,6 +55,8 @@ export async function createRequisition(
       where: { id: requisition.id },
       data: { status: RequisitionStatus.AGUARDA_MATERIAL },
     })
+
+    await draftPurchaseOrdersForShortfall(requisition.id)
   } else {
     // Reserve stock
     await reserveStock(requisition.id, userId)
@@ -65,6 +67,63 @@ export async function createRequisition(
   }
 
   return getRequisitionById(requisition.id)
+}
+
+/**
+ * When a requisition can't be fully reserved, auto-draft a RASCUNHO
+ * PurchaseOrder covering the shortfall — so Armazém has something to review
+ * and submit rather than starting a PO from a blank page. There is no
+ * concept of a "default supplier" per item in the schema, so this uses the
+ * most recent PurchaseOrderLine for that item as a heuristic for which
+ * supplier and price to reuse. Items with no purchase history are skipped
+ * silently: the requisition still sits in AGUARDA_MATERIAL as before, which
+ * remains the correct baseline signal even when no PO could be drafted.
+ */
+async function draftPurchaseOrdersForShortfall(requisitionId: string) {
+  const requisition = await prisma.requisition.findUnique({
+    where: { id: requisitionId },
+    include: { lines: true },
+  })
+  if (!requisition) return
+
+  const bySupplier = new Map<string, Array<{ itemId: string; qty: number; unitPrice: number }>>()
+
+  for (const line of requisition.lines) {
+    const balance = await prisma.stockBalance.aggregate({
+      where: { itemId: line.itemId },
+      _sum: { qty: true },
+    })
+    const available = balance._sum.qty || 0
+    const deficit = line.qtyRequested - available
+    if (deficit <= 0) continue
+
+    const lastPurchase = await prisma.purchaseOrderLine.findFirst({
+      where: { itemId: line.itemId },
+      orderBy: { createdAt: 'desc' },
+      select: { unitPrice: true, purchaseOrder: { select: { supplierId: true } } },
+    })
+    if (!lastPurchase) continue // no purchase history for this item — can't guess a supplier
+
+    const supplierId = lastPurchase.purchaseOrder.supplierId
+    const entry = { itemId: line.itemId, qty: deficit, unitPrice: Number(lastPurchase.unitPrice) }
+    bySupplier.set(supplierId, [...(bySupplier.get(supplierId) || []), entry])
+  }
+
+  for (const [supplierId, lines] of bySupplier) {
+    await prisma.purchaseOrder.create({
+      data: {
+        supplierId,
+        status: 'RASCUNHO',
+        lines: {
+          create: lines.map((l) => ({
+            itemId: l.itemId,
+            qtyOrdered: l.qty,
+            unitPrice: l.unitPrice,
+          })),
+        },
+      },
+    })
+  }
 }
 
 export async function getRequisitionById(id: string) {
@@ -143,6 +202,47 @@ export async function reserveStock(requisitionId: string, userId: string) {
       if (remainingQty === 0) break
     }
   }
+}
+
+/**
+ * Declines a requisition before it's ever been delivered - distinct from
+ * DEVOLVIDA (material given back after delivery). Releases any RESERVA
+ * stock movements made for it back to available, so a rejection never
+ * leaves stock silently locked up.
+ */
+export async function rejectRequisition(requisitionId: string, reason: string, userId: string) {
+  const req = await prisma.requisition.findUnique({
+    where: { id: requisitionId },
+    include: { lines: true },
+  })
+  if (!req) throw new Error('Requisição não encontrada')
+  if (req.status === 'ENTREGUE') throw new Error('Requisição já entregue — não pode ser rejeitada')
+  if (req.status === 'CANCELADA') throw new Error('Requisição já rejeitada')
+
+  const reservations = await prisma.stockMovement.findMany({
+    where: { refType: 'requisition', refId: requisitionId, type: 'RESERVA' },
+  })
+
+  for (const movement of reservations) {
+    await prisma.stockMovement.create({
+      data: {
+        itemId: movement.itemId,
+        locationId: movement.locationId,
+        type: 'DEVOLUCAO',
+        qty: movement.qty,
+        unitCost: movement.unitCost,
+        userId,
+        refType: 'requisition',
+        refId: requisitionId,
+      },
+    })
+  }
+
+  return prisma.requisition.update({
+    where: { id: requisitionId },
+    data: { status: 'CANCELADA', rejectionReason: reason },
+    include: { workOrder: true, lines: { include: { item: true } } },
+  })
 }
 
 export async function deliverRequisition(

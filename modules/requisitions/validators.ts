@@ -32,4 +32,10 @@ export const deliverRequisitionSchema = z.object({
   action: z.literal('deliver'),
 })
 
+export const rejectRequisitionSchema = z.object({
+  action: z.literal('reject'),
+  reason: z.string().min(3, 'Indique o motivo da rejeição'),
+})
+
 export type UpdateRequisitionLineInput = z.infer<typeof updateRequisitionLineSchema>
+export type RejectRequisitionInput = z.infer<typeof rejectRequisitionSchema>

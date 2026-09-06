@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { hasPermission } from '@/lib/rbac'
 import { createAuditLog } from '@/lib/audit'
-import { getRequisitionById, deliverRequisition } from '@/modules/requisitions/services'
-import { deliverRequisitionSchema } from '@/modules/requisitions/validators'
+import { getRequisitionById, deliverRequisition, rejectRequisition } from '@/modules/requisitions/services'
+import { deliverRequisitionSchema, rejectRequisitionSchema } from '@/modules/requisitions/validators'
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await auth()
@@ -35,14 +35,45 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const parsed = deliverRequisitionSchema.safeParse(await req.json())
-  if (!parsed.success) {
-    return NextResponse.json({ error: 'Acção inválida' }, { status: 400 })
-  }
-
+  const body = await req.json()
   const before = await getRequisitionById(params.id)
   if (!before) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
+
+  if (body.action === 'reject') {
+    const parsed = rejectRequisitionSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Indique um motivo válido' }, { status: 400 })
+    }
+
+    try {
+      const after = await rejectRequisition(params.id, parsed.data.reason, session.user.id)
+
+      await createAuditLog({
+        userId: session.user.id,
+        action: 'STATE_CHANGE',
+        module: 'requisitions',
+        entityType: 'requisition',
+        entityId: params.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        before: before as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        after: after as any,
+      })
+
+      return NextResponse.json(after)
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : 'Erro ao rejeitar requisição' },
+        { status: 409 }
+      )
+    }
+  }
+
+  const parsed = deliverRequisitionSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Acção inválida' }, { status: 400 })
   }
   if (before.status === 'ENTREGUE') {
     return NextResponse.json({ error: 'Requisição já entregue' }, { status: 409 })

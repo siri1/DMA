@@ -4,8 +4,8 @@ import {
   ClipboardList,
   CalendarClock,
   AlertTriangle,
-  Package,
   PackageSearch,
+  Package,
   Truck,
   Receipt,
   MapPin,
@@ -33,14 +33,18 @@ export interface NavGroup {
 }
 
 /**
- * Single source of truth for the app's navigation. Every protected layout
- * renders the same set of groups; visibility of each item (and of a whole
- * group, once empty) is filtered per-viewer by their role's RBAC
- * permissions in Sidebar.tsx — so every role sees every module they can
- * actually use, including Peças (parts/warehouse), instead of a hand-picked
- * subset per role.
+ * DMA Vision and Módulo de Peças are walled off from each other: each
+ * renders its own nav list, with no group in one ever linking into the
+ * other's pages. Moving between them happens only through the Hub
+ * ("Trocar de Módulo"), never via a sidebar item. Dashboards and
+ * Administração live inside the DMA Vision nav rather than getting a
+ * third Hub card, since there's no dedicated management module today.
+ *
+ * Item-level visibility is still filtered per-viewer by RBAC in
+ * Sidebar.tsx, same as before - the wall is about which LIST a layout
+ * passes in, not a second permission system.
  */
-export const NAV_GROUPS: NavGroup[] = [
+export const DMA_VISION_NAV: NavGroup[] = [
   {
     label: 'Oficina',
     icon: Wrench,
@@ -49,17 +53,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: '/oficina/workorders', label: 'Ordens de Trabalho', icon: ClipboardList, module: 'workorders' },
       { href: '/oficina/maintenance-plans', label: 'Planos de Manutenção', icon: CalendarClock, module: 'maintenance' },
       { href: '/oficina/quarantine', label: 'Quarentena', icon: AlertTriangle, module: 'assets' },
-    ],
-  },
-  {
-    label: 'Peças',
-    icon: Package,
-    items: [
-      { href: '/armazem/inventory', label: 'Stocks e Artigos', icon: Package, module: 'items' },
-      { href: '/oficina/requisitions', label: 'Requisições', icon: PackageSearch, module: 'requisitions' },
-      { href: '/armazem/receipts', label: 'Recepção', icon: Truck, module: 'stocks' },
-      { href: '/armazem/purchases', label: 'Compras e Fornecedores', icon: Receipt, module: 'suppliers' },
-      { href: '/armazem/counts', label: 'Inventário e Localizações', icon: MapPin, module: 'stocks' },
+      { href: '/oficina/requisitions', label: 'As Minhas Requisições', icon: PackageSearch, module: 'requisitions' },
     ],
   },
   {
@@ -76,6 +70,20 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/admin/users', label: 'Utilizadores', icon: Users, module: 'users' },
       { href: '/admin/audit', label: 'Auditoria', icon: Search, module: 'audit' },
+    ],
+  },
+]
+
+export const PECAS_NAV: NavGroup[] = [
+  {
+    label: 'Peças',
+    icon: Package,
+    items: [
+      { href: '/armazem/inventory', label: 'Stocks e Artigos', icon: Package, module: 'items' },
+      { href: '/armazem/receipts', label: 'Recepção', icon: Truck, module: 'stocks' },
+      { href: '/armazem/purchases', label: 'Compras e Fornecedores', icon: Receipt, module: 'suppliers' },
+      { href: '/armazem/counts', label: 'Inventário e Localizações', icon: MapPin, module: 'stocks' },
+      { href: '/armazem/requisitions', label: 'Requisições de Manutenção', icon: PackageSearch, module: 'requisitions' },
     ],
   },
 ]
