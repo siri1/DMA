@@ -218,6 +218,21 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 5.5 — Optimização de stock: limiares e fórmula de reposição
+**Presuposto:** Sem indicação do cliente sobre nível de serviço desejado ou custo de posse (%), a optimização de stock (`modules/inventory/optimization.ts`) usa:
+- Rotação lenta: sem saída (SAIDA) há mais de 90 dias.
+- Stock morto: sem saída há mais de 180 dias.
+- Consumo médio diário: soma das saídas dos últimos 90 dias ÷ 90.
+- Prazo de entrega: `Supplier.leadTimeDays` da encomenda mais recente do artigo (mesma heurística do rascunho automático de PO em `draftPurchaseOrdersForShortfall`); sem histórico de compra, não há recomendação.
+- Ponto de encomenda recomendado = consumo médio diário × (prazo de entrega + 7 dias de segurança).
+- Stock máximo recomendado = ponto de encomenda + consumo médio diário × prazo de entrega.
+
+**Razão:** Não foi fornecida taxa de custo de posse nem custo por encomenda, pelo que não se implementa EOQ clássico (evita inventar percentagens financeiras não confirmadas pelo cliente). A fórmula usada é transparente e auditável a partir de dados reais (StockMovement).
+
+**Decisão:** Provisório — ajustar os 7 dias de segurança e os limiares de 90/180 dias se o cliente indicar valores próprios.
+
+---
+
 ## 6. Estados e Transições
 
 ### 6.1 — StateTransition.reason obrigatória para certos estados
@@ -383,3 +398,4 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 | 2026-09-03 | Quarentena: REPARAR/REAPROVEITAR/TRANSFERIR → EM_OPERACAO; ABATER → ABATIDO | Assumido |
 | 2026-09-03 | Requisições só alteram a OT quando a transição é válida | Assumido — a confirmar |
 | 2026-09-04 | Migração real do log de avarias: Status Excel → WorkOrder.status; Asset.status derivado da entrada mais recente; prioridade MEDIA por defeito | Executado — 87 equipamentos, 174 OT |
+| 2026-09-06 | Optimização de stock: 90/180 dias para rotação lenta/morta, 7 dias de buffer de segurança, sem EOQ clássico (falta taxa de custo de posse) | Provisório — a confirmar |

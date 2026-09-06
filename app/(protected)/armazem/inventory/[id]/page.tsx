@@ -4,7 +4,26 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { formatCurrency, formatDateTime } from '@/lib/formatters'
 import { STOCK_MOVEMENT_TYPE, FALLBACK_META } from '@/lib/status-icons'
-import { Package, Building2, Ruler, Wallet, Barcode, History, MapPin, AlertTriangle, CheckCircle2, Circle } from 'lucide-react'
+
+// Mirrors modules/inventory/optimization.ts thresholds (kept as literals here
+// to avoid bundling the server-only Prisma-backed module into the client).
+const SLOW_MOVING_DAYS = 90
+const DEAD_STOCK_DAYS = 180
+import {
+  Package,
+  Building2,
+  Ruler,
+  Wallet,
+  Barcode,
+  History,
+  MapPin,
+  AlertTriangle,
+  CheckCircle2,
+  Circle,
+  Gauge,
+  Loader2,
+  Sparkles,
+} from 'lucide-react'
 
 interface StockBalance {
   id: string
@@ -35,24 +54,65 @@ interface ItemDetail {
   stockMovements: StockMovement[]
 }
 
+interface ItemOptimization {
+  currentQty: number
+  inventoryValue: number
+  avgDailyUsage: number
+  daysOfSupply: number | null
+  daysSinceLastOutMovement: number | null
+  isSlowMoving: boolean
+  isDeadStock: boolean
+  leadTimeDays: number | null
+  recommendedReorderPoint: number | null
+  recommendedMaxStock: number | null
+  currentMinStock: number
+  currentMaxStock: number
+}
+
 export default function ItemDetailPage() {
   const params = useParams()
   const itemId = params.id as string
 
   const [item, setItem] = useState<ItemDetail | null>(null)
+  const [optimization, setOptimization] = useState<ItemOptimization | null>(null)
   const [loading, setLoading] = useState(true)
+  const [applying, setApplying] = useState(false)
+
+  const load = async () => {
+    try {
+      const [itemRes, optRes] = await Promise.all([
+        fetch(`/api/inventory/items/${itemId}`),
+        fetch(`/api/inventory/items/${itemId}/optimization`),
+      ])
+      if (itemRes.ok) setItem(await itemRes.json())
+      if (optRes.ok) setOptimization(await optRes.json())
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(`/api/inventory/items/${itemId}`)
-        if (res.ok) setItem(await res.json())
-      } finally {
-        setLoading(false)
-      }
-    }
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemId])
+
+  const applyRecommendation = async () => {
+    if (!optimization?.recommendedReorderPoint || !optimization.recommendedMaxStock) return
+    setApplying(true)
+    try {
+      const res = await fetch(`/api/inventory/items/${itemId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          minStock: optimization.recommendedReorderPoint,
+          maxStock: optimization.recommendedMaxStock,
+        }),
+      })
+      if (res.ok) await load()
+    } finally {
+      setApplying(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -148,6 +208,64 @@ export default function ItemDetailPage() {
             <p className="text-3xl font-bold mt-1">{totalQty} <span className="text-base font-medium">{item.unit}</span></p>
             <p className="text-xs text-gray-500 mt-2">Mín: {item.minStock} · Máx: {item.maxStock}</p>
           </div>
+
+          {optimization && (
+            <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
+              <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Gauge size={18} /> Optimização de Stock
+              </h2>
+              <dl className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Consumo médio diário</dt>
+                  <dd className="font-medium text-gray-900">{optimization.avgDailyUsage.toFixed(2)} {item.unit}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-gray-500">Dias de Cobertura</dt>
+                  <dd className="font-medium text-gray-900">
+                    {optimization.daysOfSupply !== null ? `${optimization.daysOfSupply} dias` : 'Sem consumo recente'}
+                  </dd>
+                </div>
+                {optimization.leadTimeDays !== null && (
+                  <div className="flex justify-between">
+                    <dt className="text-gray-500">Prazo de Entrega (Fornecedor)</dt>
+                    <dd className="font-medium text-gray-900">{optimization.leadTimeDays} dias</dd>
+                  </div>
+                )}
+              </dl>
+
+              {optimization.isDeadStock && (
+                <p className="mt-4 text-xs text-red-700 bg-red-50 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                  <AlertTriangle size={13} /> Stock morto — sem saídas há mais de {DEAD_STOCK_DAYS} dias
+                </p>
+              )}
+              {!optimization.isDeadStock && optimization.isSlowMoving && (
+                <p className="mt-4 text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                  <AlertTriangle size={13} /> Rotação lenta — sem saídas há mais de {SLOW_MOVING_DAYS} dias
+                </p>
+              )}
+
+              {optimization.recommendedReorderPoint !== null && optimization.recommendedMaxStock !== null && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Recomendação</p>
+                  <p className="text-sm text-gray-700">
+                    Mín: <strong>{optimization.recommendedReorderPoint}</strong> · Máx:{' '}
+                    <strong>{optimization.recommendedMaxStock}</strong>
+                  </p>
+                  {(optimization.recommendedReorderPoint !== optimization.currentMinStock ||
+                    optimization.recommendedMaxStock !== optimization.currentMaxStock) && (
+                    <button
+                      onClick={applyRecommendation}
+                      disabled={applying}
+                      className="mt-3 w-full py-2 px-3 bg-amber-700 text-white text-sm font-medium rounded-xl hover:bg-amber-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    >
+                      {applying ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                      Aplicar Recomendação
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
             <h2 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">

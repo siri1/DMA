@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/formatters'
-import { Package, Plus, AlertTriangle, TrendingDown, Search } from 'lucide-react'
+import { Package, Plus, AlertTriangle, TrendingDown, Search, Wallet, Archive } from 'lucide-react'
 
 interface ItemRow {
   id: string
@@ -14,22 +14,32 @@ interface ItemRow {
   avgCost: number | string
 }
 
+interface OptimizationSummary {
+  totalInventoryValue: number
+  slowMovingValue: number
+  deadStockValue: number
+  flaggedItems: { itemId: string; sku: string; description: string; value: number }[]
+}
+
 export default function InventoryPage() {
   const [items, setItems] = useState<ItemRow[]>([])
   const [lowStock, setLowStock] = useState<ItemRow[]>([])
+  const [optimization, setOptimization] = useState<OptimizationSummary | null>(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [itemsRes, lowRes] = await Promise.all([
+        const [itemsRes, lowRes, optRes] = await Promise.all([
           fetch('/api/inventory/items'),
           fetch('/api/inventory/low-stock'),
+          fetch('/api/inventory/optimization-summary'),
         ])
 
         if (itemsRes.ok) setItems(await itemsRes.json())
         if (lowRes.ok) setLowStock(await lowRes.json())
+        if (optRes.ok) setOptimization(await optRes.json())
       } finally {
         setLoading(false)
       }
@@ -68,6 +78,29 @@ export default function InventoryPage() {
           <Plus size={16} /> Novo Artigo
         </Link>
       </div>
+
+      {optimization && optimization.totalInventoryValue > 0 && (
+        <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-5 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
+              <Wallet size={13} /> Valor Total em Stock
+            </p>
+            <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(optimization.totalInventoryValue)}</p>
+          </div>
+          <div className="p-5 bg-amber-50 rounded-2xl ring-1 ring-amber-100">
+            <p className="text-xs font-medium text-amber-700 uppercase tracking-wide flex items-center gap-1.5">
+              <TrendingDown size={13} /> Stock de Rotação Lenta (&gt;{90}d)
+            </p>
+            <p className="text-2xl font-bold text-amber-900 mt-1">{formatCurrency(optimization.slowMovingValue)}</p>
+          </div>
+          <div className="p-5 bg-red-50 rounded-2xl ring-1 ring-red-100">
+            <p className="text-xs font-medium text-red-700 uppercase tracking-wide flex items-center gap-1.5">
+              <Archive size={13} /> Stock Morto (&gt;{180}d)
+            </p>
+            <p className="text-2xl font-bold text-red-900 mt-1">{formatCurrency(optimization.deadStockValue)}</p>
+          </div>
+        </div>
+      )}
 
       {lowStock.length > 0 && (
         <div className="mb-8 p-5 bg-amber-50 ring-1 ring-amber-100 rounded-2xl">
