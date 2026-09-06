@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
 import { USER_ROLE, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
-import { Users, Plus, X, AlertTriangle, Loader2, Check, Ban, Circle, CheckCircle2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/formatters'
+import { Users, Plus, X, AlertTriangle, Loader2, Check, Ban, Circle, CheckCircle2, Wallet } from 'lucide-react'
 
 interface User {
   id: string
@@ -11,6 +12,7 @@ interface User {
   email: string
   role: string
   active: boolean
+  hourlyRate: string | number | null
   lastLoginAt: string | null
   createdAt: string
 }
@@ -20,6 +22,7 @@ interface FormData {
   email: string
   role: string
   password: string
+  hourlyRate: string
 }
 
 export default function UsersPage() {
@@ -28,7 +31,7 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState<FormData>({ name: '', email: '', role: 'OFICINA', password: '' })
+  const [form, setForm] = useState<FormData>({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '' })
 
   const load = async () => {
     try {
@@ -61,7 +64,10 @@ export default function UsersPage() {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
+        }),
       })
 
       if (!res.ok) {
@@ -69,7 +75,7 @@ export default function UsersPage() {
         return
       }
 
-      setForm({ name: '', email: '', role: 'OFICINA', password: '' })
+      setForm({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '' })
       setShowForm(false)
       await load()
     } finally {
@@ -190,6 +196,21 @@ export default function UsersPage() {
             </div>
 
             <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+                <Wallet size={14} /> Taxa Horária (Kz/hora) — opcional
+              </label>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={form.hourlyRate}
+                onChange={(e) => setForm({ ...form, hourlyRate: e.target.value })}
+                placeholder="Só relevante para técnicos de Oficina"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Palavra-passe (mín. 10 caracteres)</label>
               <input
                 type="password"
@@ -227,6 +248,7 @@ export default function UsersPage() {
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Perfil</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Taxa Horária</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Último Acesso</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Acções</th>
@@ -241,6 +263,9 @@ export default function UsersPage() {
                   <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                   <td className="px-6 py-4 text-sm">
                     <StatusBadge meta={meta} />
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">
+                    {user.hourlyRate != null ? `${formatCurrency(user.hourlyRate)}/h` : '—'}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {user.lastLoginAt ? formatDateTime(new Date(user.lastLoginAt)) : '— Nunca'}
