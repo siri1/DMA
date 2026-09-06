@@ -1,16 +1,16 @@
 # Relatório de Migração — Log de Avarias
 
-Data: 2026-09-04T07:13:26.061Z
-Modo: Dry-run (nenhuma alteração)
+Data: 2026-09-06T20:45:55.992Z
+Modo: Execução
 Ficheiro de origem: Kwanda_Log de avarias na oficina.xlsx
 
 ## Resumo
 
 - **Linhas lidas:** 174
-- **Equipamentos criados:** 0
-- **Equipamentos já existentes (ignorados):** 87
-- **Ordens de trabalho criadas:** 0
-- **Ordens de trabalho já existentes (ignoradas):** 174
+- **Equipamentos criados:** 87
+- **Equipamentos já existentes (ignorados):** 0
+- **Ordens de trabalho criadas:** 174
+- **Ordens de trabalho já existentes (ignoradas):** 0
 - **Linhas rejeitadas:** 0
 
 ## Mapeamento de estados aplicado
