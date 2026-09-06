@@ -202,6 +202,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 4.7 — Disponibilidade de técnico é um sinalizador diário, sem gestão de licenças
+**Presuposto:** `TechnicianAbsence` guarda apenas um registo por (técnico, dia) quando o técnico está indisponível (motivo livre e opcional); a ausência de registo significa disponível. Definido e removido directamente pelo gestor de operações na Escala Diária — sem pedido/aprovação, sem tipos de licença, sem saldo de dias.
+
+**Razão:** Pedido explícito do cliente: "não é preciso gestão de licenças, só mostrar se o técnico está disponível ou não". Evita construir um módulo de gestão de licenças (RH) não solicitado.
+
+**Implementação:** `modules/technicians/availability.ts`. `assignTechnician()` bloqueia (com `force: true` a permitir excepção) a atribuição a um técnico marcado indisponível nessa data, da mesma forma que bloqueia uma lacuna de qualificação.
+
+---
+
 ## 5. Peças e Stock
 
 ### 5.1 — StockMovement é imutável (append-only)

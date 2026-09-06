@@ -8,11 +8,13 @@ import {
   Truck,
   Clock,
   UserCheck,
+  UserX,
   AlertTriangle,
   Check,
   X,
   GraduationCap,
   CalendarPlus,
+  Loader2,
 } from 'lucide-react'
 
 interface AssetRef {
@@ -44,6 +46,8 @@ interface ScheduleTechnician {
   id: string
   name: string
   qualifications: string[]
+  absent: boolean
+  absenceReason: string | null
   activeIntervention: { workOrderId: string; workOrderNumber: string; startedAt: string } | null
   scheduledMinutesToday: number
   scheduledCount: number
@@ -53,12 +57,6 @@ interface ScheduleData {
   scheduled: ScheduledWorkOrder[]
   unscheduled: ScheduledWorkOrder[]
   technicians: ScheduleTechnician[]
-}
-
-interface TechnicianOption {
-  id: string
-  name: string
-  qualifications: string[]
 }
 
 function todayIso(): string {
@@ -80,21 +78,25 @@ function durationLabel(minutes: number | null): string {
 export default function DailySchedulePage() {
   const [date, setDate] = useState(todayIso())
   const [data, setData] = useState<ScheduleData | null>(null)
-  const [technicians, setTechnicians] = useState<TechnicianOption[]>([])
   const [loading, setLoading] = useState(true)
   const [assigningId, setAssigningId] = useState<string | null>(null)
-  const [gapWarning, setGapWarning] = useState<{ workOrderId: string; technicianId: string; gap: string[] } | null>(null)
+  const [gapWarning, setGapWarning] = useState<{
+    workOrderId: string
+    technicianId: string
+    gap: string[]
+    absent: boolean
+    absenceReason: string | null
+  } | null>(null)
   const [schedulingId, setSchedulingId] = useState<string | null>(null)
   const [scheduleDraft, setScheduleDraft] = useState({ time: '08:00', durationHours: '2' })
+  const [markingAbsentId, setMarkingAbsentId] = useState<string | null>(null)
+  const [absenceReasonDraft, setAbsenceReasonDraft] = useState('')
+  const [absenceBusyId, setAbsenceBusyId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
-      const [schedRes, techRes] = await Promise.all([
-        fetch(`/api/scheduling/daily?date=${date}`),
-        fetch('/api/users/technicians'),
-      ])
-      if (schedRes.ok) setData(await schedRes.json())
-      if (techRes.ok) setTechnicians(await techRes.json())
+      const res = await fetch(`/api/scheduling/daily?date=${date}`)
+      if (res.ok) setData(await res.json())
     } finally {
       setLoading(false)
     }
@@ -104,6 +106,40 @@ export default function DailySchedulePage() {
     setLoading(true)
     load()
   }, [load])
+
+  const availableTechnicians = data?.technicians.filter((t) => !t.absent) || []
+
+  const submitMarkAbsent = async (technicianId: string) => {
+    setAbsenceBusyId(technicianId)
+    try {
+      const res = await fetch(`/api/technicians/${technicianId}/absence`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date, reason: absenceReasonDraft || undefined }),
+      })
+      if (res.ok) {
+        setMarkingAbsentId(null)
+        setAbsenceReasonDraft('')
+        await load()
+      }
+    } finally {
+      setAbsenceBusyId(null)
+    }
+  }
+
+  const submitMarkAvailable = async (technicianId: string) => {
+    setAbsenceBusyId(technicianId)
+    try {
+      const res = await fetch(`/api/technicians/${technicianId}/absence`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date }),
+      })
+      if (res.ok) await load()
+    } finally {
+      setAbsenceBusyId(null)
+    }
+  }
 
   const doAssign = async (workOrderId: string, technicianId: string, force = false) => {
     setAssigningId(workOrderId)
@@ -115,8 +151,14 @@ export default function DailySchedulePage() {
       })
       if (res.status === 409) {
         const body = await res.json()
-        if (body.gap) {
-          setGapWarning({ workOrderId, technicianId, gap: body.gap })
+        if (body.gap || body.absent) {
+          setGapWarning({
+            workOrderId,
+            technicianId,
+            gap: body.gap || [],
+            absent: !!body.absent,
+            absenceReason: body.absenceReason || null,
+          })
           return
         }
       }
@@ -231,7 +273,7 @@ export default function DailySchedulePage() {
                               <option value="" disabled>
                                 ⚠️ Atribuir técnico
                               </option>
-                              {technicians.map((t) => (
+                              {availableTechnicians.map((t) => (
                                 <option key={t.id} value={t.id}>{t.name}</option>
                               ))}
                             </select>
@@ -242,7 +284,10 @@ export default function DailySchedulePage() {
                       {showGap && (
                         <div className="mt-3 p-3 bg-amber-50 ring-1 ring-amber-200 rounded-xl text-sm text-amber-900 flex items-center justify-between gap-3">
                           <span className="flex items-center gap-1.5">
-                            <AlertTriangle size={14} /> Falta qualificação: {gapWarning.gap.join(', ')}
+                            <AlertTriangle size={14} />
+                            {gapWarning.absent
+                              ? `Indisponível${gapWarning.absenceReason ? ` — ${gapWarning.absenceReason}` : ''}`
+                              : `Falta qualificação: ${gapWarning.gap.join(', ')}`}
                           </span>
                           <div className="flex gap-2 shrink-0">
                             <button
@@ -341,22 +386,75 @@ export default function DailySchedulePage() {
           <div className="space-y-4">
             {data?.technicians.map((tech) => (
               <div key={tech.id} className="pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                <p className="font-medium text-gray-900 text-sm">{tech.name}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-gray-900 text-sm">{tech.name}</p>
+                  {absenceBusyId === tech.id ? (
+                    <Loader2 size={13} className="animate-spin text-gray-400 shrink-0" />
+                  ) : tech.absent ? (
+                    <button
+                      onClick={() => submitMarkAvailable(tech.id)}
+                      className="text-xs text-emerald-700 hover:text-emerald-900 font-medium shrink-0"
+                    >
+                      Marcar Disponível
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setMarkingAbsentId(markingAbsentId === tech.id ? null : tech.id)}
+                      className="text-xs text-gray-400 hover:text-red-600 font-medium shrink-0"
+                    >
+                      Marcar Indisponível
+                    </button>
+                  )}
+                </div>
+
                 {tech.qualifications.length > 0 && (
                   <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                     <GraduationCap size={11} /> {tech.qualifications.join(', ')}
                   </p>
                 )}
-                {tech.activeIntervention ? (
+
+                {tech.absent ? (
+                  <p className="text-xs text-red-700 mt-1.5 flex items-center gap-1">
+                    <UserX size={11} /> Indisponível{tech.absenceReason ? ` — ${tech.absenceReason}` : ''}
+                  </p>
+                ) : tech.activeIntervention ? (
                   <p className="text-xs text-blue-700 mt-1.5 flex items-center gap-1">
                     <Clock size={11} /> Em curso: {tech.activeIntervention.workOrderNumber}
                   </p>
                 ) : (
                   <p className="text-xs text-emerald-700 mt-1.5">Disponível agora</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
-                  {tech.scheduledCount} OT agendada(s) hoje — {durationLabel(tech.scheduledMinutesToday)}
-                </p>
+
+                {!tech.absent && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    {tech.scheduledCount} OT agendada(s) hoje — {durationLabel(tech.scheduledMinutesToday)}
+                  </p>
+                )}
+
+                {markingAbsentId === tech.id && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={absenceReasonDraft}
+                      onChange={(e) => setAbsenceReasonDraft(e.target.value)}
+                      placeholder="Motivo (opcional)"
+                      className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => submitMarkAbsent(tech.id)}
+                      className="text-red-600 hover:text-red-800 shrink-0"
+                    >
+                      <Check size={14} />
+                    </button>
+                    <button
+                      onClick={() => { setMarkingAbsentId(null); setAbsenceReasonDraft('') }}
+                      className="text-gray-400 hover:text-gray-600 shrink-0"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
             {(!data || data.technicians.length === 0) && (

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { toDateOnly } from '@/modules/technicians/availability'
 import type { ScheduleWorkOrderInput } from './validators'
 
 /**
@@ -27,6 +28,8 @@ export async function scheduleWorkOrder(id: string, data: ScheduleWorkOrderInput
 export interface AssignTechnicianResult {
   assigned: boolean
   gap: string[]
+  absent: boolean
+  absenceReason: string | null
   workOrder?: Awaited<ReturnType<typeof prisma.workOrder.update>>
 }
 
@@ -47,8 +50,13 @@ export async function assignTechnician(
 
   const gap = getQualificationGap(workOrder.requiredQualifications, technician.qualifications)
 
-  if (gap.length > 0 && !force) {
-    return { assigned: false, gap }
+  const checkDate = toDateOnly(workOrder.scheduledStart ?? new Date())
+  const absence = await prisma.technicianAbsence.findUnique({
+    where: { technicianId_date: { technicianId, date: checkDate } },
+  })
+
+  if ((gap.length > 0 || absence) && !force) {
+    return { assigned: false, gap, absent: !!absence, absenceReason: absence?.reason ?? null }
   }
 
   const updated = await prisma.workOrder.update({
@@ -57,7 +65,7 @@ export async function assignTechnician(
     include: { asset: true, assignedTo: true },
   })
 
-  return { assigned: true, gap, workOrder: updated }
+  return { assigned: true, gap, absent: !!absence, absenceReason: absence?.reason ?? null, workOrder: updated }
 }
 
 function startOfDay(date: Date): Date {
@@ -76,6 +84,8 @@ export interface DailyScheduleTechnician {
   id: string
   name: string
   qualifications: string[]
+  absent: boolean
+  absenceReason: string | null
   activeIntervention: { workOrderId: string; workOrderNumber: string; startedAt: Date } | null
   scheduledMinutesToday: number
   scheduledCount: number
@@ -116,14 +126,20 @@ export async function getDailySchedule(date: Date) {
   })
   const activeByTechnician = new Map(activeInterventions.map((i) => [i.technicianId, i]))
 
+  const absences = await prisma.technicianAbsence.findMany({ where: { date: start } })
+  const absenceByTechnician = new Map(absences.map((a) => [a.technicianId, a]))
+
   const technicians: DailyScheduleTechnician[] = technicianUsers.map((tech) => {
     const todaysWorkOrders = scheduled.filter((wo) => wo.assignedToId === tech.id)
     const active = activeByTechnician.get(tech.id)
+    const absence = absenceByTechnician.get(tech.id)
 
     return {
       id: tech.id,
       name: tech.name,
       qualifications: tech.qualifications,
+      absent: !!absence,
+      absenceReason: absence?.reason || null,
       activeIntervention: active
         ? {
             workOrderId: active.workOrderId,

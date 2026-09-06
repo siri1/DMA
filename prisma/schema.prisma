@@ -29,6 +29,8 @@ model User {
   auditLogs            AuditLog[]
   notifications        Notification[]
   stockMovements       StockMovement[]
+  absences             TechnicianAbsence[] @relation("AbsentTechnician")
+  absencesRecorded     TechnicianAbsence[] @relation("AbsenceRecordedBy")
 
   @@index([email])
   @@index([role])
@@ -124,6 +126,24 @@ model Intervention {
 
   @@index([workOrderId])
   @@index([technicianId])
+}
+
+// A single day a technician is unavailable (sick, absent, etc.) - not a
+// leave-request workflow. One row per absent day; a technician with no row
+// for a date is assumed available. Set/cleared directly by an ops manager,
+// no approval step.
+model TechnicianAbsence {
+  id                String    @id @default(cuid())
+  technicianId      String
+  technician        User      @relation("AbsentTechnician", fields: [technicianId], references: [id], onDelete: Cascade)
+  date              DateTime
+  reason            String?
+  recordedById      String
+  recordedBy        User      @relation("AbsenceRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  createdAt         DateTime  @default(now())
+
+  @@unique([technicianId, date])
+  @@index([date])
 }
 
 model StateTransition {

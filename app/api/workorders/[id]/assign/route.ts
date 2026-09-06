@@ -32,7 +32,14 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     if (!result.assigned) {
       return NextResponse.json(
-        { error: 'Técnico não tem as qualificações necessárias', gap: result.gap },
+        {
+          error: result.absent
+            ? 'Técnico está marcado como indisponível'
+            : 'Técnico não tem as qualificações necessárias',
+          gap: result.gap,
+          absent: result.absent,
+          absenceReason: result.absenceReason,
+        },
         { status: 409 }
       )
     }
