@@ -1,8 +1,12 @@
 import { prisma } from '@/lib/prisma'
+import { StockMovementType } from '@prisma/client'
 import { getInventoryOptimizationSummary } from '@/modules/inventory/optimization'
 
 const ACTIONABLE_REQUISITION_STATUSES = ['PENDENTE', 'AGUARDA_MATERIAL', 'RESERVADA'] as const
 const OPEN_PO_STATUSES = ['RASCUNHO', 'ENVIADA', 'PARCIAL'] as const
+// Fixed x-axis order for the movements-by-type chart - zero-filled below so
+// bars never appear/disappear between loads as activity comes and goes.
+const MOVEMENT_TYPE_ORDER = Object.values(StockMovementType)
 
 export interface LowStockRow {
   id: string
@@ -39,6 +43,17 @@ export interface RecentMovementRow {
   itemDescription: string
 }
 
+export interface MovementTypeCount {
+  type: string
+  count: number
+}
+
+export interface StockRotation {
+  fastMovingValue: number
+  slowMovingOnlyValue: number
+  deadStockValue: number
+}
+
 export interface PartsDashboardMetrics {
   totalInventoryValue: number
   slowMovingValue: number
@@ -54,6 +69,14 @@ export interface PartsDashboardMetrics {
   pendingRequisitions: PendingRequisitionRow[]
   openPurchaseOrders: OpenPurchaseOrderRow[]
   recentMovements: RecentMovementRow[]
+  /** Stock movements by type over the last 30 days - throughput, not a snapshot. */
+  movementsByType: MovementTypeCount[]
+  /**
+   * Same total as totalInventoryValue, split into three non-overlapping
+   * buckets by recency of last exit (dead stock is a subset of slow-moving
+   * upstream, so it's subtracted out here to make the parts sum to the whole).
+   */
+  stockRotation: StockRotation
 }
 
 /**
@@ -75,6 +98,7 @@ export async function getPartsDashboardMetrics(): Promise<PartsDashboardMetrics>
     activeSuppliersCount,
     openPurchaseOrdersRaw,
     recentMovementsRaw,
+    movementsByTypeRaw,
   ] = await Promise.all([
     getInventoryOptimizationSummary(),
     prisma.item.findMany({
@@ -102,6 +126,11 @@ export async function getPartsDashboardMetrics(): Promise<PartsDashboardMetrics>
       include: { item: { select: { sku: true, description: true } } },
       orderBy: { createdAt: 'desc' },
       take: 10,
+    }),
+    prisma.stockMovement.groupBy({
+      by: ['type'],
+      _count: { _all: true },
+      where: { createdAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } },
     }),
   ])
 
@@ -155,6 +184,18 @@ export async function getPartsDashboardMetrics(): Promise<PartsDashboardMetrics>
     itemDescription: m.item.description,
   }))
 
+  const countByType = new Map(movementsByTypeRaw.map((row) => [row.type, row._count._all]))
+  const movementsByType: MovementTypeCount[] = MOVEMENT_TYPE_ORDER.map((type) => ({
+    type,
+    count: countByType.get(type) || 0,
+  }))
+
+  const stockRotation: StockRotation = {
+    deadStockValue: optimization.deadStockValue,
+    slowMovingOnlyValue: optimization.slowMovingValue - optimization.deadStockValue,
+    fastMovingValue: optimization.totalInventoryValue - optimization.slowMovingValue,
+  }
+
   return {
     totalInventoryValue: optimization.totalInventoryValue,
     slowMovingValue: optimization.slowMovingValue,
@@ -162,6 +203,8 @@ export async function getPartsDashboardMetrics(): Promise<PartsDashboardMetrics>
     lowStockCount: lowStock.length,
     outOfStockCount,
     actionableRequisitionsCount,
+    movementsByType,
+    stockRotation,
     draftPurchaseOrdersCount,
     sentPurchaseOrdersCount,
     partialReceiptsCount,

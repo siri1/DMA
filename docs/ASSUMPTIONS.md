@@ -271,6 +271,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 5.6 — Cores dos gráficos: paládio de referência validado (Anthropic dataviz skill)
+**Presuposto:** Os gráficos do Dashboard de Peças (`app/(protected)/armazem/dashboard/page.tsx`) usam cores da paleta de referência validada da skill de dataviz, não escolhidas visualmente: `#2a78d6` (categórico slot-1 azul) para o gráfico de barras (série única — "Movimentos de Stock por Tipo"), e a escala de estado fixa (`#0ca30c` bom / `#fab219` aviso / `#d03b3b` crítico) para o gráfico circular de rotação de stock, por representar literalmente um estado de saúde (normal → lenta → morta), não identidades arbitrárias. Etiquetas de percentagem no gráfico circular são renderizadas fora do anel (texto neutro sobre o fundo do cartão) em vez de sobre o preenchimento colorido, porque o aviso (`#fab219`) é claro demais para contraste de texto fiável.
+
+**Razão:** Evita paletas "adivinhadas a olho"; a paleta de referência já passa os testes de daltonismo/contraste documentados na skill.
+
+**Nota:** O gráfico executivo pré-existente (`gestao/dashboard-exec`) ainda usa cores Tailwind arbitrárias (`#f59e0b`/`#10b981`/`#ef4444`) — não foi alterado, por não ter sido pedido.
+
+---
+
 ## 6. Estados e Transições
 
 ### 6.1 — StateTransition.reason obrigatória para certos estados

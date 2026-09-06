@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { formatCurrency, formatDateTime } from '@/lib/formatters'
 import { REQUISITION_STATUS, PURCHASE_ORDER_STATUS, STOCK_MOVEMENT_TYPE, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
 import {
@@ -16,7 +17,21 @@ import {
   Truck,
   Building2,
   History,
+  BarChart3,
+  PieChart as PieChartIcon,
+  CheckCircle2,
 } from 'lucide-react'
+
+// Validated categorical/status colors — see docs/ASSUMPTIONS.md 5.6.
+// Movements-by-type is a single series (one measure, nominal categories), so
+// every bar takes the same categorical slot-1 hue rather than a different
+// color per bar (color would just be re-encoding what the bar length already
+// shows). The rotation pie IS a health scale (good → warning → critical), so
+// it wears the reserved status palette instead of categorical hues.
+const CHART_SERIES_BLUE = '#2a78d6'
+const STATUS_GOOD = '#0ca30c'
+const STATUS_WARNING = '#fab219'
+const STATUS_CRITICAL = '#d03b3b'
 
 interface LowStockRow {
   id: string
@@ -53,6 +68,17 @@ interface RecentMovementRow {
   itemDescription: string
 }
 
+interface MovementTypeCount {
+  type: string
+  count: number
+}
+
+interface StockRotation {
+  fastMovingValue: number
+  slowMovingOnlyValue: number
+  deadStockValue: number
+}
+
 interface PartsDashboardMetrics {
   totalInventoryValue: number
   slowMovingValue: number
@@ -68,6 +94,8 @@ interface PartsDashboardMetrics {
   pendingRequisitions: PendingRequisitionRow[]
   openPurchaseOrders: OpenPurchaseOrderRow[]
   recentMovements: RecentMovementRow[]
+  movementsByType: MovementTypeCount[]
+  stockRotation: StockRotation
 }
 
 export default function PartsDashboardPage() {
@@ -111,6 +139,45 @@ export default function PartsDashboardPage() {
     { label: 'Fornecedores Activos', value: metrics.activeSuppliersCount, icon: Building2, accent: 'text-slate-600 bg-slate-50 ring-slate-100' },
   ]
 
+  const movementChartData = metrics.movementsByType.map((m) => ({
+    name: (STOCK_MOVEMENT_TYPE[m.type] || { ...FALLBACK_META, label: m.type }).label,
+    count: m.count,
+  }))
+
+  const rotationTotal =
+    metrics.stockRotation.fastMovingValue + metrics.stockRotation.slowMovingOnlyValue + metrics.stockRotation.deadStockValue
+
+  const rotationChartData = [
+    { name: 'Rotação Normal', value: metrics.stockRotation.fastMovingValue, color: STATUS_GOOD, icon: CheckCircle2 },
+    { name: 'Rotação Lenta', value: metrics.stockRotation.slowMovingOnlyValue, color: STATUS_WARNING, icon: TrendingDown },
+    { name: 'Stock Morto', value: metrics.stockRotation.deadStockValue, color: STATUS_CRITICAL, icon: Archive },
+  ].filter((slice) => slice.value > 0)
+
+  const pctOf = (value: number) => (rotationTotal > 0 ? Math.round((value / rotationTotal) * 100) : 0)
+
+  // Percentage labels render outside the ring (neutral text on the card
+  // background) rather than inside the colored fill - the warning slice
+  // (#fab219) is too light for reliable text-on-fill contrast, and this
+  // sidesteps picking white-vs-ink per slice entirely.
+  const RADIAN = Math.PI / 180
+  const renderRotationLabel = (props: {
+    cx: number
+    cy: number
+    midAngle: number
+    outerRadius: number
+    value: number
+  }) => {
+    const { cx, cy, midAngle, outerRadius, value } = props
+    const radius = outerRadius + 18
+    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+    return (
+      <text x={x} y={y} fill="#374151" fontSize={12} fontWeight={600} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+        {pctOf(value)}%
+      </text>
+    )
+  }
+
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <div className="mb-8">
@@ -132,6 +199,71 @@ export default function PartsDashboardPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-1 flex items-center gap-2">
+            <BarChart3 size={18} /> Movimentos de Stock por Tipo
+          </h2>
+          <p className="text-xs text-gray-400 mb-4">Últimos 30 dias</p>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={movementChartData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#6b7280' }} axisLine={{ stroke: '#e5e7eb' }} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: '#6b7280' }} allowDecimals={false} axisLine={false} tickLine={false} />
+              <Tooltip
+                cursor={{ fill: '#f8fafc' }}
+                formatter={(value: number) => [`${value}`, 'Movimentos']}
+                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+              />
+              <Bar dataKey="count" name="Movimentos" fill={CHART_SERIES_BLUE} radius={[4, 4, 0, 0]} maxBarSize={32} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-1 flex items-center gap-2">
+            <PieChartIcon size={18} /> Composição do Stock por Rotação
+          </h2>
+          <p className="text-xs text-gray-400 mb-4">Por valor, ao custo médio ponderado</p>
+          {rotationTotal === 0 ? (
+            <p className="text-sm text-gray-400 py-16 text-center">Sem stock valorizado para analisar</p>
+          ) : (
+            <>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={rotationChartData}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={2}
+                    label={renderRotationLabel}
+                    labelLine={{ stroke: '#d1d5db' }}
+                  >
+                    {rotationChartData.map((slice) => (
+                      <Cell key={slice.name} fill={slice.color} stroke="#ffffff" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e5e7eb' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap justify-center gap-4 mt-2">
+                {rotationChartData.map((slice) => (
+                  <div key={slice.name} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <slice.icon size={13} style={{ color: slice.color }} />
+                    {slice.name} — {formatCurrency(slice.value)}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
