@@ -13,6 +13,7 @@ import {
   TrendingUp,
   Search,
   Users,
+  CalendarDays,
 } from 'lucide-react'
 import type { Permission } from '@/lib/rbac'
 
@@ -51,6 +52,7 @@ export const DMA_VISION_NAV: NavGroup[] = [
     items: [
       { href: '/oficina/assets', label: 'Equipamentos', icon: Wrench, module: 'assets' },
       { href: '/oficina/workorders', label: 'Ordens de Trabalho', icon: ClipboardList, module: 'workorders' },
+      { href: '/oficina/schedule', label: 'Escala Diária', icon: CalendarDays, module: 'workorders' },
       { href: '/oficina/maintenance-plans', label: 'Planos de Manutenção', icon: CalendarClock, module: 'maintenance' },
       { href: '/oficina/quarantine', label: 'Quarentena', icon: AlertTriangle, module: 'assets' },
       { href: '/oficina/requisitions', label: 'As Minhas Requisições', icon: PackageSearch, module: 'requisitions' },

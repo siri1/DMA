@@ -6,6 +6,7 @@ export const createUserSchema = z.object({
   role: z.enum(['ADMIN', 'OFICINA', 'ARMAZEM', 'GESTAO', 'CLIENTE_INTERNO', 'PAINEL']),
   password: z.string().min(10).max(100),
   hourlyRate: z.number().min(0).optional(),
+  qualifications: z.array(z.string().min(1)).optional(),
 })
 
 export type CreateUserInput = z.infer<typeof createUserSchema>
@@ -16,6 +17,7 @@ export const updateUserSchema = z.object({
   role: z.enum(['ADMIN', 'OFICINA', 'ARMAZEM', 'GESTAO', 'CLIENTE_INTERNO', 'PAINEL']).optional(),
   active: z.boolean().optional(),
   hourlyRate: z.number().min(0).nullable().optional(),
+  qualifications: z.array(z.string().min(1)).optional(),
 })
 
 export type UpdateUserInput = z.infer<typeof updateUserSchema>

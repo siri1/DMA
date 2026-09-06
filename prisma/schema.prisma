@@ -18,6 +18,7 @@ model User {
   role              UserRole
   active            Boolean   @default(true)
   hourlyRate        Decimal?  @db.Decimal(10, 2)
+  qualifications    String[]  @default([])
   lastLoginAt       DateTime?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -89,6 +90,9 @@ model WorkOrder {
   dueAt             DateTime?
   closedAt          DateTime?
   summary           String
+  scheduledStart          DateTime?
+  estimatedDurationMinutes Int?
+  requiredQualifications   String[] @default([])
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
@@ -99,6 +103,7 @@ model WorkOrder {
   @@index([status])
   @@index([priority])
   @@index([assignedToId])
+  @@index([scheduledStart])
 }
 
 model Intervention {

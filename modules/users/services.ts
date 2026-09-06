@@ -16,6 +16,7 @@ export async function createUser(input: CreateUserInput) {
       passwordHash,
       active: true,
       hourlyRate: input.hourlyRate,
+      qualifications: input.qualifications,
     },
     select: {
       id: true,
@@ -24,6 +25,7 @@ export async function createUser(input: CreateUserInput) {
       role: true,
       active: true,
       hourlyRate: true,
+      qualifications: true,
       lastLoginAt: true,
       createdAt: true,
     },
@@ -39,6 +41,7 @@ export async function getUsers() {
       role: true,
       active: true,
       hourlyRate: true,
+      qualifications: true,
       lastLoginAt: true,
       createdAt: true,
     },
@@ -56,6 +59,7 @@ export async function getUserById(id: string) {
       role: true,
       active: true,
       hourlyRate: true,
+      qualifications: true,
       lastLoginAt: true,
       createdAt: true,
     },
@@ -71,6 +75,7 @@ export async function updateUser(id: string, input: UpdateUserInput) {
       role: input.role,
       active: input.active,
       hourlyRate: input.hourlyRate,
+      qualifications: input.qualifications,
     },
     select: {
       id: true,
@@ -79,6 +84,7 @@ export async function updateUser(id: string, input: UpdateUserInput) {
       role: true,
       active: true,
       hourlyRate: true,
+      qualifications: true,
       lastLoginAt: true,
     },
   })

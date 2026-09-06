@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { formatDateTime } from '@/lib/formatters'
 import { USER_ROLE, FALLBACK_META, StatusBadge } from '@/lib/status-icons'
 import { formatCurrency } from '@/lib/formatters'
-import { Users, Plus, X, AlertTriangle, Loader2, Check, Ban, Circle, CheckCircle2, Wallet } from 'lucide-react'
+import { Users, Plus, X, AlertTriangle, Loader2, Check, Ban, Circle, CheckCircle2, Wallet, GraduationCap, Pencil } from 'lucide-react'
 
 interface User {
   id: string
@@ -13,6 +13,7 @@ interface User {
   role: string
   active: boolean
   hourlyRate: string | number | null
+  qualifications: string[]
   lastLoginAt: string | null
   createdAt: string
 }
@@ -23,6 +24,7 @@ interface FormData {
   role: string
   password: string
   hourlyRate: string
+  qualifications: string
 }
 
 export default function UsersPage() {
@@ -31,7 +33,10 @@ export default function UsersPage() {
   const [showForm, setShowForm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [form, setForm] = useState<FormData>({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '' })
+  const [form, setForm] = useState<FormData>({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '', qualifications: '' })
+  const [editingQualifications, setEditingQualifications] = useState<string | null>(null)
+  const [qualificationsDraft, setQualificationsDraft] = useState('')
+  const [savingQualifications, setSavingQualifications] = useState(false)
 
   const load = async () => {
     try {
@@ -67,6 +72,10 @@ export default function UsersPage() {
         body: JSON.stringify({
           ...form,
           hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
+          qualifications: form.qualifications
+            .split(',')
+            .map((q) => q.trim())
+            .filter(Boolean),
         }),
       })
 
@@ -75,11 +84,38 @@ export default function UsersPage() {
         return
       }
 
-      setForm({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '' })
+      setForm({ name: '', email: '', role: 'OFICINA', password: '', hourlyRate: '', qualifications: '' })
       setShowForm(false)
       await load()
     } finally {
       setSaving(false)
+    }
+  }
+
+  const startEditQualifications = (user: User) => {
+    setEditingQualifications(user.id)
+    setQualificationsDraft(user.qualifications.join(', '))
+  }
+
+  const saveQualifications = async (userId: string) => {
+    setSavingQualifications(true)
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          qualifications: qualificationsDraft
+            .split(',')
+            .map((q) => q.trim())
+            .filter(Boolean),
+        }),
+      })
+      if (res.ok) {
+        setEditingQualifications(null)
+        await load()
+      }
+    } finally {
+      setSavingQualifications(false)
     }
   }
 
@@ -211,6 +247,19 @@ export default function UsersPage() {
             </div>
 
             <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1">
+                <GraduationCap size={14} /> Qualificações — opcional
+              </label>
+              <input
+                type="text"
+                value={form.qualifications}
+                onChange={(e) => setForm({ ...form, qualifications: e.target.value })}
+                placeholder="Ex: Hidráulica, Electricidade (separadas por vírgula)"
+                className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Palavra-passe (mín. 10 caracteres)</label>
               <input
                 type="password"
@@ -249,6 +298,7 @@ export default function UsersPage() {
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Perfil</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Taxa Horária</th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Qualificações</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Último Acesso</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
               <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Acções</th>
@@ -266,6 +316,40 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
                     {user.hourlyRate != null ? `${formatCurrency(user.hourlyRate)}/h` : '—'}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600 max-w-[220px]">
+                    {editingQualifications === user.id ? (
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="text"
+                          value={qualificationsDraft}
+                          onChange={(e) => setQualificationsDraft(e.target.value)}
+                          placeholder="Hidráulica, Electricidade..."
+                          className="w-full px-2 py-1 border border-gray-300 rounded-lg text-xs"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => saveQualifications(user.id)}
+                          disabled={savingQualifications}
+                          className="text-emerald-600 hover:text-emerald-800 shrink-0"
+                        >
+                          {savingQualifications ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                        </button>
+                        <button onClick={() => setEditingQualifications(null)} className="text-gray-400 hover:text-gray-600 shrink-0">
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => startEditQualifications(user)}
+                        className="flex items-center gap-1.5 text-left hover:text-indigo-700 group"
+                      >
+                        <span className="truncate">
+                          {user.qualifications.length > 0 ? user.qualifications.join(', ') : '—'}
+                        </span>
+                        <Pencil size={12} className="opacity-0 group-hover:opacity-100 shrink-0" />
+                      </button>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {user.lastLoginAt ? formatDateTime(new Date(user.lastLoginAt)) : '— Nunca'}

@@ -184,6 +184,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 4.5 — Qualificações de técnico são etiquetas livres, sem certificação/validade
+**Presuposto:** `User.qualifications` e `WorkOrder.requiredQualifications` são listas de texto livre (ex.: "Hidráulica", "Electricidade"), comparadas de forma insensível a maiúsculas. Não há modelo de certificação com data de validade — isso é uma funcionalidade maior (skills matrix / certificações), fora deste âmbito.
+
+**Razão:** Cobre o essencial pedido (bloquear atribuição a um técnico sem a qualificação necessária) sem introduzir um módulo novo de certificações não solicitado.
+
+**Implementação:** `getQualificationGap()` em `modules/scheduling/services.ts`. Atribuir um técnico sem a qualificação exige confirmação explícita (`force: true`) — nunca é bloqueado de forma definitiva, porque uma emergência pode justificar a excepção.
+
+---
+
 ## 5. Peças e Stock
 
 ### 5.1 — StockMovement é imutável (append-only)
