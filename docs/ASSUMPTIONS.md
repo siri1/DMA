@@ -406,6 +406,17 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 **Razão:** Disaster recovery.
 
+---
+
+### 10.4 — Deploy inicial em Vercel em vez de VPS + NGINX
+**Presuposto:** Ao contrário de 10.1/10.2 (Dockerfile de produção + VPS Ubuntu + NGINX), o primeiro deploy público usa a Vercel (build nativo do Next.js, sem Docker) com uma base de dados PostgreSQL gerida externamente (Neon, via a integração Vercel Postgres). O `/worker` (cron) não está implementado ainda (`worker/index.ts` é um stub) e nenhuma funcionalidade de upload de ficheiros foi construída, pelo que as duas limitações da Vercel que normalmente bloqueariam esta escolha (sem processo persistente, sem disco persistente) não afectam nada que já exista.
+
+**Razão:** Pedido explícito do cliente ("posso usar Vercel?"), depois de comparar VPS vs. plataforma gerida. Menos trabalho operacional para uma equipa pequena.
+
+**Impacto futuro:** Se o `/worker` for implementado, as tarefas agendadas devem usar Vercel Cron Jobs (`vercel.json` + rotas `/api/cron/*`) em vez de `node-cron` num processo próprio. Se for construído upload de fotos/documentos, precisa de armazenamento S3-compatível (ex.: Vercel Blob, Cloudflare R2) — nunca disco local.
+
+**Decisão:** Válido para o deploy actual. O plano de VPS/Docker em 10.1/10.2 mantém-se documentado como alternativa caso o cliente queira mais tarde controlo total da infraestrutura.
+
 **Automação:** Cron job em Ubuntu: `0 2 * * * /home/dma/backup.sh`.
 
 ---
