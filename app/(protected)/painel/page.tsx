@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { formatDateTime } from '@/lib/formatters'
 import { WORKORDER_STATUS, WORKORDER_PRIORITY, FALLBACK_META } from '@/lib/status-icons'
-import { Wrench, CheckCircle2 } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface WorkOrderRow {
@@ -95,8 +95,10 @@ export default function PainelTV() {
   return (
     <div className={`w-screen h-screen overflow-hidden bg-gradient-to-br ${page.bg} relative`}>
       <div className="absolute top-6 left-8 right-8 flex justify-between items-center text-white/70 text-lg">
-        <span className="flex items-center gap-2">
-          <Wrench size={20} /> DMA Vision — Oficina
+        <span className="flex items-center gap-2.5">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/branding/kwanda-logo.jpg" alt="" className="h-8 w-8 rounded-md object-cover" />
+          DMA Vision — Oficina
         </span>
         <span>{now.toLocaleTimeString('pt-PT')}</span>
       </div>

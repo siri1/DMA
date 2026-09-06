@@ -13,11 +13,15 @@ export function HubHeader({ userName, role }: { userName: string; role: UserRole
   return (
     <header className="border-b border-white/10 bg-black/20 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-5">
-        <div>
-          <h1 className="text-lg font-bold text-white">DMA App</h1>
-          <p className="text-sm text-slate-400">
-            Bem-vindo, {userName} · {ROLE_LABELS[role] || role}
-          </p>
+        <div className="flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-9 w-9 rounded-lg object-cover shrink-0" />
+          <div>
+            <h1 className="text-lg font-bold text-white">DMA Vision</h1>
+            <p className="text-sm text-slate-400">
+              Bem-vindo, {userName} · {ROLE_LABELS[role] || role}
+            </p>
+          </div>
         </div>
         <button
           onClick={async () => {

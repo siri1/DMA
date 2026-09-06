@@ -103,8 +103,9 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md relative">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur mb-4 shadow-lg ring-1 ring-white/20">
-            <Wrench className="text-white" size={30} strokeWidth={2} />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white p-2.5 mb-4 shadow-lg ring-1 ring-white/20">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="w-full h-full rounded-xl object-cover" />
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">DMA Vision</h1>
           <p className="text-blue-200 text-sm mt-1">Gestão de Manutenção &amp; Peças · KWANDA, Lda.</p>
