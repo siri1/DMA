@@ -3,10 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LogOut, type LucideIcon } from 'lucide-react'
+import { LogOut, LayoutGrid, type LucideIcon } from 'lucide-react'
 import type { UserRole } from '@prisma/client'
 import { hasPermission } from '@/lib/rbac'
 import { NAV_GROUPS } from './nav-config'
+import { MODULE_ACCESS } from '@/lib/modules'
 
 interface SidebarProps {
   title: string
@@ -39,6 +40,8 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
         items: group.items.filter((item) => hasPermission(role, item.module, item.permission || 'view')),
       })).filter((group) => group.items.length > 0)
     : []
+
+  const canSwitchModule = role ? MODULE_ACCESS[role].length > 1 : false
 
   return (
     <aside className="w-64 flex flex-col bg-gray-950 text-white overflow-y-auto shrink-0">
@@ -84,7 +87,16 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
         ))}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      <div className="p-4 border-t border-white/10 space-y-1">
+        {canSwitchModule && (
+          <Link
+            href="/hub"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <LayoutGrid size={16} strokeWidth={2} />
+            <span>Trocar de Módulo</span>
+          </Link>
+        )}
         {userName && (
           <div className="mb-3 px-2">
             <p className="text-sm font-medium text-white truncate">{userName}</p>
