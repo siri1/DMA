@@ -146,6 +146,15 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+### 3.6 — Quadro "Equipamentos Não Resolvidos" no Dashboard Operacional
+**Presuposto:** CLAUDE.md sec5.2 pede "dias em aberto" e "equipamento mais antigo na Oficina" mas nunca tinha sido implementado. Adicionado a `gestao/dashboard-ops`, adaptado a partir de um exemplar visual fornecido pelo cliente: cada Asset é classificado exactamente numa de três categorias, a partir da sua OT aberta (não `RESOLVIDA`/`CANCELADA`) mais antiga — `AGUARDA_MATERIAL` → "Aguarda Material"; qualquer outro estado aberto → "Em Reparação"; sem OT aberta → "Disponível". As três categorias somam sempre o total de equipamentos.
+
+**Razão:** O exemplar não distingue os restantes estados (`EM_CURSO`, `EM_DIAGNOSTICO`, `EM_INSPECCAO`) — agrupados em "Em Reparação" para bater certo com o desenho (Total = Em Reparação + Aguarda Material + Disponíveis).
+
+**Decisão:** As secções pré-existentes (Ordens Atrasadas, Manutenções Vencidas, Artigos Abaixo do Mínimo) foram mantidas por baixo do novo quadro, não substituídas — continuam a ser pedidas explicitamente por CLAUDE.md sec5.11 e o exemplar não as cobre. Os links "Ver todos" apontam para `/oficina/workorders` sem pré-filtrar por estado, porque essa página lê o filtro apenas de estado local (não da URL); filtrar por lá é manual.
+
+---
+
 ## 4. Ordens de Trabalho e Requisições
 
 ### 4.1 — WorkOrder obrigatória para cada Requisition
