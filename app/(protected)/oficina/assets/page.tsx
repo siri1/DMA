@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { AssetCard } from '@/components/domain/AssetCard'
 import type { Asset, AssetStatus } from '@prisma/client'
 import { ASSET_STATUS, FALLBACK_META } from '@/lib/status-icons'
@@ -9,10 +10,24 @@ import { Truck, Plus, LayoutGrid, FolderOpen } from 'lucide-react'
 
 const ALL_META = { icon: LayoutGrid, text: 'text-gray-600', badge: '', label: 'Todos' }
 
-export default function AssetListPage() {
+const VALID_STATUSES: AssetStatus[] = [
+  'EM_OPERACAO',
+  'EM_MANUTENCAO',
+  'INDISPONIVEL',
+  'FORA_DE_SERVICO',
+  'QUARENTENA',
+  'ABATIDO',
+]
+
+function AssetListContent() {
+  const searchParams = useSearchParams()
+  const presetStatus = searchParams.get('status')
+  const initialStatus: AssetStatus | 'ALL' =
+    presetStatus && VALID_STATUSES.includes(presetStatus as AssetStatus) ? (presetStatus as AssetStatus) : 'ALL'
+
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<AssetStatus | 'ALL'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<AssetStatus | 'ALL'>(initialStatus)
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -30,15 +45,7 @@ export default function AssetListPage() {
     fetchAssets()
   }, [statusFilter])
 
-  const statuses: Array<AssetStatus | 'ALL'> = [
-    'ALL',
-    'EM_OPERACAO',
-    'EM_MANUTENCAO',
-    'INDISPONIVEL',
-    'FORA_DE_SERVICO',
-    'QUARENTENA',
-    'ABATIDO',
-  ]
+  const statuses: Array<AssetStatus | 'ALL'> = ['ALL', ...VALID_STATUSES]
 
   return (
     <div className="p-8">
@@ -99,5 +106,20 @@ export default function AssetListPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function AssetListPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-8 text-center py-16 text-gray-400">
+          <Truck size={40} className="mx-auto mb-3 animate-pulse" />
+          <p className="text-sm">A carregar...</p>
+        </div>
+      }
+    >
+      <AssetListContent />
+    </Suspense>
   )
 }

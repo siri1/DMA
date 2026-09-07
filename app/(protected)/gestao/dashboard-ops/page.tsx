@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { formatDateTime } from '@/lib/formatters'
 import { WORKORDER_STATUS, FALLBACK_META } from '@/lib/status-icons'
 import {
@@ -49,6 +50,8 @@ interface OperationalMetrics {
 const REFRESH_MS = 30000
 
 function EquipmentTable({ rows }: { rows: EquipmentStatusRow[] }) {
+  const router = useRouter()
+
   if (rows.length === 0) {
     return <p className="text-sm text-gray-400 flex items-center gap-2 px-6 py-8"><Sparkles size={15} /> Sem equipamentos nesta categoria</p>
   }
@@ -66,7 +69,11 @@ function EquipmentTable({ rows }: { rows: EquipmentStatusRow[] }) {
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.workOrderId} className="border-b border-gray-50 hover:bg-gray-50/70">
+            <tr
+              key={row.workOrderId}
+              onClick={() => router.push(`/oficina/assets/${row.assetId}`)}
+              className="border-b border-gray-50 hover:bg-gray-50/70 cursor-pointer"
+            >
               <td className="py-3 px-4 font-mono text-xs font-medium text-gray-900">{row.assetCode}</td>
               <td className="py-3 px-2 text-gray-800">{row.description}</td>
               <td className="py-3 px-2 text-gray-500 hidden md:table-cell">{[row.brand, row.model].filter(Boolean).join(' ') || '—'}</td>
@@ -155,51 +162,70 @@ export default function OperationalDashboard() {
         </div>
       </div>
 
-      {/* KPI row */}
+      {/* KPI row - every card drills down: to the filtered equipment list,
+          to the matching table below, or straight to the oldest asset. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
+        <Link
+          href="/oficina/assets"
+          className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
           <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2">
             <Boxes size={15} /> Total de Equipamentos
           </div>
           <p className="text-3xl font-bold text-gray-900">{board.totalAssets}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
+        </Link>
+        <a
+          href="#em-reparacao-panel"
+          className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
           <div className="flex items-center gap-2 text-red-600 text-xs font-semibold uppercase tracking-wide mb-2">
             <Wrench size={15} /> Em Reparação <span className="text-gray-400 font-normal normal-case">(Em Curso)</span>
           </div>
           <p className="text-3xl font-bold text-red-600">{board.emReparacaoCount}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
+        </a>
+        <a
+          href="#aguarda-material-panel"
+          className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
           <div className="flex items-center gap-2 text-amber-600 text-xs font-semibold uppercase tracking-wide mb-2">
             <Package size={15} /> Aguarda Material <span className="text-gray-400 font-normal normal-case">(Pendente)</span>
           </div>
           <p className="text-3xl font-bold text-amber-600">{board.aguardaMaterialCount}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
+        </a>
+        <Link
+          href="/oficina/assets?status=EM_OPERACAO"
+          className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+        >
           <div className="flex items-center gap-2 text-emerald-600 text-xs font-semibold uppercase tracking-wide mb-2">
             <CheckCircle2 size={15} /> Disponíveis <span className="text-gray-400 font-normal normal-case">(Resolvidos)</span>
           </div>
           <p className="text-3xl font-bold text-emerald-600">{board.availableCount}</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
-          <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2">
-            <CalendarClock size={15} /> Máquina Mais Antiga em Aberto
-          </div>
-          {board.oldestOpen ? (
-            <>
-              <p className="text-base font-bold text-gray-900 truncate">{board.oldestOpen.assetCode}</p>
-              <p className="text-xs text-gray-500 truncate">{[board.oldestOpen.brand, board.oldestOpen.model].filter(Boolean).join(' ') || board.oldestOpen.description}</p>
-              <p className="text-xs font-medium text-gray-700 mt-1">{board.oldestOpen.daysOpen} dias em aberto</p>
-            </>
-          ) : (
+        </Link>
+        {board.oldestOpen ? (
+          <Link
+            href={`/oficina/assets/${board.oldestOpen.assetId}`}
+            className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+          >
+            <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2">
+              <CalendarClock size={15} /> Máquina Mais Antiga em Aberto
+            </div>
+            <p className="text-base font-bold text-gray-900 truncate">{board.oldestOpen.assetCode}</p>
+            <p className="text-xs text-gray-500 truncate">{[board.oldestOpen.brand, board.oldestOpen.model].filter(Boolean).join(' ') || board.oldestOpen.description}</p>
+            <p className="text-xs font-medium text-gray-700 mt-1">{board.oldestOpen.daysOpen} dias em aberto</p>
+          </Link>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-5">
+            <div className="flex items-center gap-2 text-gray-500 text-xs font-semibold uppercase tracking-wide mb-2">
+              <CalendarClock size={15} /> Máquina Mais Antiga em Aberto
+            </div>
             <p className="text-sm text-gray-400">Nenhum equipamento em aberto</p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Two-column equipment tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+        <div id="em-reparacao-panel" className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden scroll-mt-6">
           <div className="px-6 py-4 bg-red-600 text-white flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
               <Wrench size={17} /> Em Reparação (Em Curso)
@@ -215,7 +241,7 @@ export default function OperationalDashboard() {
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+        <div id="aguarda-material-panel" className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden scroll-mt-6">
           <div className="px-6 py-4 bg-amber-500 text-white flex items-center justify-between">
             <h2 className="font-semibold flex items-center gap-2">
               <Package size={17} /> Aguarda Material (Pendente)
