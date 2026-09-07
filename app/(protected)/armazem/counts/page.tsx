@@ -174,7 +174,7 @@ export default function CountsPage() {
 
       {tab === 'counts' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Contagens de Inventário ({counts.length})</h2>
             <button
               onClick={() => setShowCountForm(!showCountForm)}
@@ -300,7 +300,7 @@ export default function CountsPage() {
 
       {tab === 'locations' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Localizações ({locations.length})</h2>
             <button
               onClick={() => setShowLocationForm(!showLocationForm)}
@@ -332,7 +332,7 @@ export default function CountsPage() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Corredor</label>
                   <input
@@ -371,7 +371,7 @@ export default function CountsPage() {
             </form>
           )}
 
-          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 border-b">
                 <tr>

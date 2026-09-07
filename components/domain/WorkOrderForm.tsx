@@ -219,7 +219,7 @@ export function WorkOrderForm({ assetId, onSuccess }: WorkOrderFormProps) {
       {/* Origin - visual pills */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Origem *</label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {ORIGIN_OPTIONS.map((opt) => {
             const Icon = opt.icon
             const active = origin === opt.value
@@ -244,7 +244,7 @@ export function WorkOrderForm({ assetId, onSuccess }: WorkOrderFormProps) {
       {/* Priority - visual pills using shared status-icons meta */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Prioridade *</label>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {PRIORITY_ORDER.map((value) => {
             const meta = WORKORDER_PRIORITY[value]
             const Icon = meta.icon
@@ -267,7 +267,7 @@ export function WorkOrderForm({ assetId, onSuccess }: WorkOrderFormProps) {
       </div>
 
       {/* Assignment + due date */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700 mb-1.5">
             <UserCheck size={14} /> Atribuir a

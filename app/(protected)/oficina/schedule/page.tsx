@@ -204,7 +204,7 @@ export default function DailySchedulePage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
           <CalendarDays size={28} /> Escala Diária
         </h1>

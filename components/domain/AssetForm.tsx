@@ -70,7 +70,7 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
             <Building2 size={14} /> Marca
@@ -95,7 +95,7 @@ export function AssetForm({ asset, onSuccess }: AssetFormProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
             <Hash size={14} /> Número de Série

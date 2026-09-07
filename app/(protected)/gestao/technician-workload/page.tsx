@@ -85,7 +85,7 @@ export default function TechnicianWorkloadPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
           <TrendingUp size={28} /> Carga de Trabalho dos Técnicos
         </h1>
@@ -121,7 +121,7 @@ export default function TechnicianWorkloadPage() {
       <div className="space-y-4">
         {data?.map((tech) => (
           <div key={tech.technicianId} className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 p-6">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
               <div>
                 <h2 className="text-base font-semibold text-gray-900">{tech.name}</h2>
                 <p className="text-sm text-gray-500 mt-0.5">

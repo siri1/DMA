@@ -445,6 +445,21 @@ novo_CMP = (stock_atual * CMP_atual + qtd_entrada * preco_entrada) / (stock_atua
 
 ---
 
+## 12. Responsividade Móvel
+
+### 12.1 — Revisão de responsividade (telemóvel)
+**Presuposto:** A secção 11.3 já assumia "apenas web (responsive)", mas a implementação real não cumpria isso: a barra lateral (`components/layout/Sidebar.tsx`) era fixa a 256px sem alternativa móvel — em ecrãs de telemóvel ocupava a maior parte do ecrã sem forma de a esconder — e várias tabelas usavam `overflow-hidden` (corta conteúdo) em vez de `overflow-x-auto` (deslize horizontal).
+
+**Correcção:**
+- Novo `components/layout/AppShell.tsx`, usado pelos quatro layouts protegidos (`oficina`, `armazem`, `gestao`, `admin`): abaixo do breakpoint `lg`, a barra lateral torna-se uma gaveta ("drawer") aberta por um botão hambúrguer numa barra superior, com fundo semi-transparente a fechar ao tocar fora; acima de `lg`, mantém-se fixa como antes.
+- Todas as tabelas com `overflow-hidden` corrigidas para `overflow-x-auto` (ou envolvidas numa div com esse comportamento quando não tinham nenhum wrapper).
+- Grelhas de formulário/botões com 2 a 4 colunas sem ponto de quebra (`grid-cols-N` sem prefixo `sm:`/sem `grid-cols-1` base) ajustadas para colapsar em ecrãs pequenos.
+- Cabeçalhos de página (título + botão/filtro de data) que usavam `flex justify-between` sem `flex-wrap` — um nome de utilizador ou título mais longo podia forçar scroll horizontal da página inteira — receberam `flex-wrap` + `gap`.
+
+**Fora de âmbito desta revisão:** `/painel` (Painel de Monitorização, TV) não foi alterado — CLAUDE.md §9 pede apenas 1920×1080 e 1366×768 para esse ecrã, que é, por definição, um quiosque de parede sem interacção táctil.
+
+---
+
 ## Changelog de Pressupostos
 
 | Data | Presuposto | Decisão |

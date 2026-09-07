@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { LogOut, LayoutGrid, type LucideIcon } from 'lucide-react'
+import { LogOut, LayoutGrid, X, type LucideIcon } from 'lucide-react'
 import type { UserRole } from '@prisma/client'
 import { hasPermission } from '@/lib/rbac'
 import type { NavGroup } from './nav-config'
@@ -17,6 +17,9 @@ interface SidebarProps {
    * layout is walled off from the other; nothing here ever links into the
    * other module's pages. Switching modules happens only via the Hub. */
   navGroups: NavGroup[]
+  /** Called after any link is clicked (nav item, module switch) - AppShell
+   * uses this to close the mobile drawer on navigation. No-op on desktop. */
+  onNavigate?: () => void
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -28,7 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
   PAINEL: 'Painel',
 }
 
-export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-indigo-800', navGroups }: SidebarProps) {
+export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-indigo-800', navGroups, onNavigate }: SidebarProps) {
   const pathname = usePathname()
   const { data: session } = useSession()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,9 +52,18 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
 
   return (
     <aside className="w-64 flex flex-col bg-gray-950 text-white overflow-y-auto shrink-0">
-      <div className="bg-white px-6 py-4 flex items-center justify-center">
+      <div className="bg-white px-6 py-4 flex items-center justify-center relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/branding/kwanda-logo.jpg" alt="KWANDA, Lda." className="h-14 w-14 rounded-lg object-cover" />
+        {onNavigate && (
+          <button
+            onClick={onNavigate}
+            aria-label="Fechar menu"
+            className="lg:hidden absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       <div className={`bg-gradient-to-br ${accent} p-6`}>
@@ -80,6 +92,7 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
                   <Link
                     key={item.href}
                     href={item.href}
+                    onClick={onNavigate}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       active
                         ? 'bg-white/10 text-white shadow-inner ring-1 ring-white/10'
@@ -100,6 +113,7 @@ export function Sidebar({ title, icon: HeaderIcon, accent = 'from-indigo-600 to-
         {canSwitchModule && (
           <Link
             href="/hub"
+            onClick={onNavigate}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
           >
             <LayoutGrid size={16} strokeWidth={2} />

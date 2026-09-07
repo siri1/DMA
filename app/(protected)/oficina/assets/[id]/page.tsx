@@ -68,7 +68,7 @@ export default function AssetDetailPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-wrap justify-between items-start gap-3 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Truck size={28} /> {asset.description}

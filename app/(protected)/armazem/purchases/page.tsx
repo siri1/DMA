@@ -176,7 +176,7 @@ export default function PurchasesPage() {
 
       {tab === 'orders' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Encomendas ({orders.length})</h2>
             <button
               onClick={() => setShowPOForm(!showPOForm)}
@@ -310,7 +310,7 @@ export default function PurchasesPage() {
 
       {tab === 'suppliers' && (
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
             <h2 className="text-lg font-semibold text-gray-900">Fornecedores ({suppliers.length})</h2>
             <button
               onClick={() => setShowSupplierForm(!showSupplierForm)}
@@ -389,7 +389,7 @@ export default function PurchasesPage() {
             </form>
           )}
 
-          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-100 border-b">
                 <tr>

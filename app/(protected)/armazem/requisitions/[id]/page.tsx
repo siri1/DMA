@@ -109,7 +109,7 @@ export default function ArmazemRequisitionDetailPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-start mb-8">
+      <div className="flex flex-wrap justify-between items-start gap-3 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <PackageSearch size={28} /> Requisição — {req.workOrder.number}
@@ -139,24 +139,26 @@ export default function ArmazemRequisitionDetailPage() {
                 <Package size={18} /> Artigos <span className="text-xs font-normal text-gray-400">({req.lines.length})</span>
               </h2>
             </div>
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Artigo</th>
-                  <th className="px-6 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Requisitado</th>
-                  <th className="px-6 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Entregue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {req.lines.map((l) => (
-                  <tr key={l.id}>
-                    <td className="px-6 py-3 text-gray-800">{l.item.sku} — {l.item.description}</td>
-                    <td className="px-6 py-3 text-right text-gray-700">{l.qtyRequested} {l.item.unit}</td>
-                    <td className="px-6 py-3 text-right font-medium text-gray-900">{l.qtyDelivered} {l.item.unit}</td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-2.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Artigo</th>
+                    <th className="px-6 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Requisitado</th>
+                    <th className="px-6 py-2.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wide">Entregue</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {req.lines.map((l) => (
+                    <tr key={l.id}>
+                      <td className="px-6 py-3 text-gray-800">{l.item.sku} — {l.item.description}</td>
+                      <td className="px-6 py-3 text-right text-gray-700">{l.qtyRequested} {l.item.unit}</td>
+                      <td className="px-6 py-3 text-right font-medium text-gray-900">{l.qtyDelivered} {l.item.unit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {showRejectForm && (
